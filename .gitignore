@@ -1,0 +1,15 @@
+csv/
+*.pkl
+*.pyc
+__pycache__/
+.DS_Store
+value_bets_*.csv
+understat_xg.csv
+injuries/
+v3_*.csv
+v4_*.csv
+vb2_*.csv
+*_diag.png
+backtest_*.png
+draw_*.csv
+draw_*.png

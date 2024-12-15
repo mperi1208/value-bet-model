@@ -1,0 +1,291 @@
+Team;League;Rivals
+Paris SG;F1;Marseille,Lyon,Monaco
+Marseille;F1;Paris SG,Lyon,Nice,Monaco
+Lyon;F1;Paris SG,St Etienne,Marseille
+St Etienne;F1;Lyon,Monaco,Bordeaux
+Monaco;F1;Nice,Marseille,Paris SG,Lyon
+Nice;F1;Monaco,Marseille,Lyon
+Lens;F1;Lille,Amiens,Valenciennes
+Lille;F1;Lens,Valenciennes
+Bordeaux;F1;Toulouse,Nantes,Marseille
+Toulouse;F1;Bordeaux,Montpellier
+Nantes;F1;Rennes,Guingamp,Lorient
+Rennes;F1;Nantes,Guingamp,Lorient,Brest
+Guingamp;F1;Rennes,Nantes,Lorient,Brest
+Brest;F1;Rennes,Guingamp,Lorient
+Lorient;F1;Rennes,Nantes,Brest,Guingamp
+Strasbourg;F1;Metz,Nancy
+Metz;F1;Nancy,Strasbourg
+Nancy;F1;Metz,Strasbourg
+Montpellier;F1;Nimes,Toulouse
+Nimes;F1;Montpellier
+Reims;F1;Troyes,Amiens
+Troyes;F1;Reims,Auxerre,Dijon
+Auxerre;F1;Troyes,Dijon
+Amiens;F1;Lens,Reims
+Dijon;F1;Auxerre,Troyes
+Ajaccio;F1;Bastia,Ajaccio GFCO
+Bastia;F1;Ajaccio,Ajaccio GFCO
+Ajaccio GFCO;F1;Bastia,Ajaccio
+Valenciennes;F1;Lens,Lille,Amiens
+Caen;F1;Le Havre,Rouen
+Le Havre;F1;Caen
+Angers;F1;Nantes
+Clermont;F1;St Etienne,Lyon
+Evian Thonon Gaillard;F1;Lyon
+Sochaux;F1;Auxerre,Dijon
+Paris FC;F2;Paris SG,Red Star
+Red Star;F2;Paris FC,Paris SG
+Quevilly Rouen;F2;Le Havre,Caen
+Laval;F2;Rennes,Nantes,Guingamp
+Le Mans;F2;Nantes,Angers
+Niort;F2;Bordeaux,La Rochelle
+Pau;F2;Bordeaux,Bayonne
+Rodez;F2;Toulouse,Clermont
+Sedan;F2;Reims,Charleville
+Chateauroux;F2;Tours,Bourges
+Gueugnon;F2;Macon,Dijon
+Grenoble;F2;Lyon,Chambery
+Dunkerque;F2;Lens,Lille
+Orleans;F2;Tours,Chartres
+AC Ajaccio;F2;Bastia,Ajaccio
+Bayern Munich;D1;Dortmund,RB Leipzig,M'gladbach
+Dortmund;D1;Bayern Munich,Schalke 04,M'gladbach
+Schalke 04;D1;Dortmund,Bochum
+M'gladbach;D1;Bayern Munich,Dortmund,Leverkusen,FC Koln
+Leverkusen;D1;Cologne,M'gladbach,FC Koln
+FC Koln;D1;M'gladbach,Leverkusen,Fortuna Dusseldorf
+Ein Frankfurt;D1;Darmstadt,Mainz
+Hamburg;D1;Werder Bremen,St Pauli,Hannover
+Werder Bremen;D1;Hamburg,St Pauli
+St Pauli;D1;Hamburg,Werder Bremen
+Hannover;D1;Hamburg,Braunschweig
+Hertha;D1;Union Berlin
+Union Berlin;D1;Hertha
+Stuttgart;D1;Freiburg,Augsburg
+Freiburg;D1;Stuttgart,Hoffenheim
+Hoffenheim;D1;Stuttgart,Freiburg,Darmstadt
+Darmstadt;D1;Ein Frankfurt,Hoffenheim
+RB Leipzig;D1;Bayern Munich,Dortmund
+Augsburg;D1;Stuttgart,Nurnberg
+Nurnberg;D1;Augsburg,Fürth
+Wolfsburg;D1;Hannover,Braunschweig
+Mainz;D1;Ein Frankfurt,Kaiserslautern
+Heidenheim;D1;Stuttgart,Ulm
+Holstein Kiel;D1;Hamburg,Werder Bremen
+Bochum;D1;Schalke 04,Dortmund
+Hamburg;D2;St Pauli,Werder Bremen,Hannover
+St Pauli;D2;Hamburg,Werder Bremen
+Hannover;D2;Hamburg,Braunschweig,Wolfsburg
+Braunschweig;D2;Hannover,Wolfsburg
+Fortuna Dusseldorf;D2;FC Koln,M'gladbach
+Kaiserslautern;D2;Mainz,Saarbrucken
+Paderborn;D2;Bielefeld,Dortmund
+Bielefeld;D2;Paderborn,Hannover
+Dresden;D2;RB Leipzig,Chemnitz
+Magdeburg;D2;Halle,Dessau
+Rostock;D2;Greifswald,Schwerin
+Greuther Furth;D2;Nurnberg,Augsburg
+Nurnberg;D2;Greuther Furth,Augsburg
+Karlsruhe;D2;Stuttgart,Freiburg
+Ingolstadt;D2;Augsburg,Nurnberg
+Aue;D2;Chemnitz,Zwickau
+Darmstadt;D2;Ein Frankfurt,Mainz
+Sandhausen;D2;Karlsruhe,Mannheim
+Osnabruck;D2;Bremen,Hamburg
+Regensburg;D2;Nurnberg,Augsburg
+Wismar;D2;Rostock,Hamburg
+Wehen;D2;Frankfurt,Darmstadt
+Schalke 04;D2;Dortmund,Bochum
+Hertha;D2;Union Berlin
+Union Berlin;D2;Hertha
+Heidenheim;D2;Stuttgart,Ulm
+Holstein Kiel;D2;Hamburg,Flensburg
+Bochum;D2;Schalke 04,Dortmund
+Real Madrid;SP1;Barcelona,Ath Madrid,Atletico
+Barcelona;SP1;Real Madrid,Espanyol,Girona
+Ath Madrid;SP1;Real Madrid,Rayo Vallecano,Getafe
+Ath Bilbao;SP1;Real Sociedad,Osasuna
+Real Sociedad;SP1;Ath Bilbao,Osasuna
+Sevilla;SP1;Betis,Cadiz,Malaga
+Betis;SP1;Sevilla,Cadiz
+Cadiz;SP1;Sevilla,Betis,Malaga
+Valencia;SP1;Villarreal,Levante,Ath Bilbao
+Villarreal;SP1;Valencia,Levante
+Levante;SP1;Valencia,Villarreal
+Espanol;SP1;Barcelona,Girona
+Celta;SP1;Deportivo,Pontevedra
+Alaves;SP1;Ath Bilbao,Real Sociedad,Osasuna
+Getafe;SP1;Ath Madrid,Leganes,Rayo Vallecano
+Vallecano;SP1;Ath Madrid,Getafe,Leganes
+Rayo Vallecano;SP1;Ath Madrid,Getafe,Leganes
+Leganes;SP1;Ath Madrid,Getafe,Rayo Vallecano
+Girona;SP1;Barcelona,Espanol
+Osasuna;SP1;Ath Bilbao,Real Sociedad
+Mallorca;SP1;Real Madrid,Barcelona
+Granada;SP1;Almeria,Malaga,Betis
+Almeria;SP1;Granada,Malaga
+Valladolid;SP1;Real Madrid,Celta
+Elche;SP1;Valencia,Villarreal,Alicante
+Las Palmas;SP1;Tenerife
+Sociedad;SP1;Ath Bilbao,Osasuna
+Gijon;SP2;Oviedo,Sporting Gijon,Aviles
+Oviedo;SP2;Gijon,Aviles,Sporting Gijon
+Zaragoza;SP2;Huesca,Osasuna
+Huesca;SP2;Zaragoza,Osasuna
+SD Huesca;SP2;Zaragoza,Osasuna
+Deportivo;SP2;Celta,Ferrol
+Ferrol;SP2;Deportivo,Lugo
+Lugo;SP2;Ferrol,Deportivo,Ponferradina
+Ponferradina;SP2;Lugo,Gijon
+Eibar;SP2;Real Sociedad,Ath Bilbao
+Sabadell;SP2;Girona,Barcelona B,Espanyol B
+Mirandes;SP2;Ath Bilbao B,Burgos
+Burgos;SP2;Valladolid,Mirandes
+Tenerife;SP2;Las Palmas
+Las Palmas;SP2;Tenerife
+Villarreal B;SP2;Valencia,Levante,Villarreal
+Levante;SP2;Valencia,Villarreal,Villarreal B
+Castellon;SP2;Valencia,Villarreal
+Elche;SP2;Valencia,Alicante,Villarreal
+Alcorcon;SP2;Ath Madrid,Leganes,Rayo Vallecano
+Leganes;SP2;Alcorcon,Ath Madrid,Getafe
+Cartagena;SP2;Murcia,Elche
+Albacete;SP2;Albacete ciudad,Villarreal
+Granada;SP2;Malaga,Almeria
+Valladolid;SP2;Burgos,Real Madrid
+Girona;SP2;Barcelona,Espanol,Sabadell
+Sociedad B;SP2;Ath Bilbao,Osasuna
+Mallorca;SP2;Real Madrid,Barcelona
+Rayo Vallecano;SP2;Ath Madrid,Getafe,Leganes
+Almeria;SP2;Granada,Malaga
+Eldense;SP2;Alicante,Elche
+Man United;E0;Man City,Liverpool,Leeds
+Man City;E0;Man United,Liverpool,Everton
+Liverpool;E0;Everton,Man United
+Everton;E0;Liverpool,Man City
+Arsenal;E0;Tottenham,Chelsea
+Tottenham;E0;Arsenal,Chelsea,West Ham
+Chelsea;E0;Arsenal,Tottenham,West Ham
+West Ham;E0;Millwall,Chelsea,Tottenham
+Aston Villa;E0;Birmingham,West Brom,Wolves
+Wolves;E0;West Brom,Aston Villa,Birmingham
+West Brom;E0;Aston Villa,Wolves,Birmingham
+Sunderland;E0;Newcastle,Middlesbrough
+Newcastle;E0;Sunderland,Middlesbrough
+Middlesbrough;E0;Sunderland,Newcastle
+Leeds;E0;Man United,Sheffield United,Bradford
+Sheffield United;E0;Leeds,Sheff Wed,Barnsley
+Sheff Utd;E0;Leeds,Sheff Wed,Barnsley
+Nottm Forest;E0;Derby,Leicester,Notts County
+Leicester;E0;Nottm Forest,Derby,Coventry
+Derby;E0;Nottm Forest,Leicester
+Brighton;E0;Crystal Palace,Southampton,Charlton
+Crystal Palace;E0;Brighton,Millwall,Charlton
+Millwall;E0;Crystal Palace,West Ham,Charlton
+Southampton;E0;Bournemouth,Portsmouth,Brighton
+Bournemouth;E0;Southampton,Portsmouth
+Stoke;E0;Port Vale,Crewe
+Hull;E0;Leeds,Bradford
+Norwich;E0;Ipswich,Peterborough
+Swansea;E0;Cardiff,Bristol City
+Cardiff;E0;Swansea,Bristol City
+Fulham;E0;Brentford,QPR,Chelsea
+Brentford;E0;Fulham,QPR,Chelsea
+QPR;E0;Fulham,Brentford,Millwall
+Burnley;E0;Blackburn,Preston,Blackpool
+Blackburn;E0;Burnley,Preston,Blackpool
+Luton;E0;Watford,MK Dons
+Watford;E0;Luton,Vicarage Road
+Huddersfield;E0;Leeds,Bradford
+Wigan;E1;Bolton,Blackpool,Preston
+Bolton;E1;Wigan,Blackpool,Burnley
+Blackpool;E1;Burnley,Blackburn,Bolton,Preston
+Preston;E1;Burnley,Blackburn,Blackpool,Bolton,Wigan
+Blackburn;E1;Burnley,Preston,Blackpool
+Burnley;E1;Blackburn,Preston,Blackpool,Bolton
+Millwall;E1;Crystal Palace,West Ham,Charlton
+Charlton;E1;Crystal Palace,Millwall,Brighton
+Derby;E1;Nottm Forest,Leicester
+Nottm Forest;E1;Derby,Leicester
+Leicester;E1;Nottm Forest,Derby,Coventry
+Coventry;E1;Aston Villa,Birmingham,Leicester
+Birmingham;E1;Aston Villa,West Brom,Wolves,Coventry
+West Brom;E1;Aston Villa,Wolves,Birmingham
+Sheff Wed;E1;Sheffield United,Sheff Utd,Barnsley,Rotherham
+Sheffield United;E1;Sheff Wed,Leeds,Barnsley
+Sheff Utd;E1;Sheff Wed,Leeds,Barnsley
+Rotherham;E1;Sheff Wed,Sheffield United,Barnsley,Doncaster
+Barnsley;E1;Sheff Wed,Rotherham,Doncaster
+Sunderland;E1;Newcastle,Middlesbrough
+Middlesbrough;E1;Sunderland,Newcastle
+Leeds;E1;Bradford,Man United,Hull
+Bradford;E1;Leeds,Huddersfield,Halifax
+Huddersfield;E1;Leeds,Bradford
+Hull;E1;Leeds,Bradford
+Cardiff;E1;Swansea,Bristol City
+Swansea;E1;Cardiff,Bristol City
+Bristol City;E1;Cardiff,Swansea,Bristol Rovers
+Ipswich;E1;Norwich,Colchester
+Norwich;E1;Ipswich,Peterborough
+Southampton;E1;Bournemouth,Portsmouth
+Portsmouth;E1;Southampton,Bournemouth
+QPR;E1;Fulham,Brentford
+Brentford;E1;QPR,Fulham
+Luton;E1;Watford,MK Dons
+Watford;E1;Luton,Herts
+Reading;E1;Swindon,Oxford
+Oxford;E1;Reading,Swindon
+Plymouth;E1;Exeter,Torquay
+Stoke;E1;Port Vale,Crewe
+Wigan;E1;Bolton,Blackpool
+Juventus;I1;Torino,Inter,AC Milan
+Inter;I1;AC Milan,Juventus
+AC Milan;I1;Inter,Juventus
+Torino;I1;Juventus
+Roma;I1;Lazio,Napoli
+Lazio;I1;Roma,Napoli
+Napoli;I1;Roma,Salernitana,Juventus
+Fiorentina;I1;Empoli,Juventus
+Empoli;I1;Fiorentina,Pisa,Livorno
+Genoa;I1;Sampdoria,Spezia
+Sampdoria;I1;Genoa,Spezia
+Spezia;I1;Genoa,Sampdoria
+Atalanta;I1;Brescia,Cremonese
+Bologna;I1;Parma,Modena
+Parma;I1;Bologna,Modena,Reggiana
+Udinese;I1;Venezia,Trieste
+Venezia;I1;Udinese,Padova
+Verona;I1;Chievo,Brescia
+Hellas Verona;I1;Chievo,Brescia
+Cagliari;I1;Sassari
+Lecce;I1;Bari,Taranto
+Sassuolo;I1;Modena,Reggiana
+Monza;I1;Inter,AC Milan
+Frosinone;I1;Roma,Latina
+Salernitana;I1;Napoli,Avellino
+Bari;I2;Lecce,Taranto,Foggia
+Parma;I2;Bologna,Modena,Reggiana
+Reggiana;I2;Parma,Modena,Bologna
+Modena;I2;Reggiana,Parma,Bologna
+Brescia;I2;Atalanta,Verona,Cremonese
+Cremonese;I2;Brescia,Atalanta
+Venezia;I2;Udinese,Padova,Trieste
+Palermo;I2;Catania,Messina
+Catanzaro;I2;Cosenza,Crotone,Reggina
+Cosenza;I2;Catanzaro,Crotone,Reggina
+Ascoli;I2;Pescara,Ancona
+Perugia;I2;Ternana,Foligno
+Ternana;I2;Perugia,Foligno
+Cittadella;I2;Venezia,Padova,Vicenza
+Pisa;I2;Empoli,Livorno,Lucca
+Sampdoria;I2;Genoa,Spezia
+Spezia;I2;Genoa,Sampdoria
+Benevento;I2;Napoli,Caserta,Avellino
+SPAL;I2;Ferrara,Bologna
+Cesena;I2;Rimini,Folli
+Como;I2;Milan,Varese
+Frosinone;I2;Roma,Latina
+Salernitana;I2;Napoli,Avellino
+Sudtirol;I2;Trento,Bolzano
+Feralpisalo;I2;Brescia,Mantova
