@@ -1,14 +1,13 @@
 """
 draw_pipeline.py
 ================
-Value bet detection — Match Draw market
-XGBoost + isotonic calibration + walk-forward validation
+Value bet detection — Match Draw market (Div1)
+XGBoost + isotonic calibration (cv=3) + walk-forward validation
 
-Corrections v2 :
-  - Suppression du leakage HS/AS/HST/AST/HC/AC (stats post-match)
-  - TRAIN_WINDOW paramétrable via CLI (--train-window)
-  - random_state fixé dans CalibratedClassifierCV
-  - Résultats mis à jour : ROI +8.81%, 2747 paris, 10029 matchs évalués
+Note: this pipeline uses isotonic calibration with k-fold cross-validation
+(cv=3), which differs from the earlier cv='prefit' approach that produced a
+spurious +8.81% ROI by overfitting on small external calibration sets.
+See README for the full analysis.
 
 Usage:
     python3 draw_pipeline.py --data-dir "/path/to/csv/"
@@ -218,7 +217,6 @@ def build_model() -> CalibratedClassifierCV:
         reg_lambda=1.5,
         scale_pos_weight=2.0,
         eval_metric="logloss",
-        use_label_encoder=False,
         random_state=RANDOM_STATE,
         n_jobs=-1,
     )

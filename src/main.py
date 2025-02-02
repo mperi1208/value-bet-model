@@ -29,6 +29,9 @@ DEFAULT_RIVALS = os.path.join(_HERE, 'teams_by_country.csv')
 DEFAULT_MODEL  = os.path.join(_HERE, 'model.pkl')
 DEFAULT_EDGE   = 0.05
 
+# Ligues Div2 exclues du périmètre de paris (ROI systématiquement mauvais en backtest)
+EXCLUDED_DIVS  = {'D2', 'SP2', 'I2'}
+
 
 def run_full(csv_root, rivals_csv, edge_min, model_out,
              download=False, update_only=False):
@@ -44,11 +47,10 @@ def run_full(csv_root, rivals_csv, edge_min, model_out,
     odds_col = 'Avg<2.5'
 
     # ── 1. Chargement
-    df_all  = load_all(csv_root)
-    df_div2 = df_all[df_all['tier'] == 2].copy().reset_index(drop=True)
+    df_all = load_all(csv_root)
 
-    # ── 2. Features
-    df_feat = build_features(df_div2, rivals_csv=rivals_csv)
+    # ── 2. Features sur toutes les divisions (plus de données d'entraînement)
+    df_feat = build_features(df_all, rivals_csv=rivals_csv)
 
     # Assigner prob_bookie = under ici, après build_features
     if 'prob_bookie_under' in df_feat.columns:
@@ -65,8 +67,8 @@ def run_full(csv_root, rivals_csv, edge_min, model_out,
     if dropped > 0:
         print(f'  ⚠ {dropped} matchs sans cotes exclus ({len(df_feat)} retenus)')
 
-    # ── 3. Walk-forward
-    df_wf, model = run_walk_forward(df_feat)
+    # ── 3. Walk-forward : entraîne sur Div1+Div2, prédit sur Div2 uniquement
+    df_wf, model = run_walk_forward(df_feat, predict_tier=2)
     feature_importance(model)
     save_model(model, model_out)
 
@@ -76,13 +78,19 @@ def run_full(csv_root, rivals_csv, edge_min, model_out,
         src  = df_feat[keys + [odds_col]].drop_duplicates(subset=keys)
         df_wf = df_wf.merge(src, on=keys, how='left')
 
-    # S'assurer que prob_bookie dans df_wf est bien l'under
     if 'prob_bookie_under' in df_wf.columns:
         df_wf['prob_bookie'] = df_wf['prob_bookie_under']
 
     df_wf_clean = df_wf.dropna(subset=['prob_model', 'prob_bookie', target, odds_col]).copy()
 
-    vb = detect_value_bets(df_wf_clean, edge_min=edge_min)
+    # Exclure les ligues à ROI systématiquement négatif
+    if EXCLUDED_DIVS:
+        before_excl = len(df_wf_clean)
+        df_wf_clean = df_wf_clean[~df_wf_clean['Div'].isin(EXCLUDED_DIVS)].copy()
+        print(f'  Ligues exclues {EXCLUDED_DIVS} : {before_excl - len(df_wf_clean)} matchs retirés')
+
+    vb = detect_value_bets(df_wf_clean, edge_min=edge_min,
+                           odds_col=odds_col, odds_min=1.65, odds_max=2.35)
     if len(vb) == 0:
         print('Aucun value bet. Baisse le seuil edge.')
         return

@@ -116,7 +116,103 @@ def _compute_team_rolling(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ═══════════════════════════════════════════════════════════════
-# 2. CLASSEMENT DYNAMIQUE
+# 2. FEATURES ARBITRE
+# ═══════════════════════════════════════════════════════════════
+
+def _compute_referee_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Pour chaque match, calcule le taux under 2.5 historique de l'arbitre
+    et sa moyenne de buts, en utilisant uniquement ses matchs passés.
+    """
+    df = df.copy().sort_values('Date').reset_index(drop=True)
+
+    df['total_goals'] = df['FTHG'] + df['FTAG']
+    df['is_under']    = (df['total_goals'] < 2.5).astype(float)
+
+    grp = 'Referee'
+    df['ref_under_rate'] = (
+        df.groupby(grp, group_keys=False)['is_under']
+        .transform(lambda x: x.shift(1).expanding(min_periods=3).mean())
+    )
+    df['ref_avg_goals'] = (
+        df.groupby(grp, group_keys=False)['total_goals']
+        .transform(lambda x: x.shift(1).expanding(min_periods=3).mean())
+    )
+
+    df = df.drop(columns=['total_goals', 'is_under'], errors='ignore')
+    return df
+
+
+# ═══════════════════════════════════════════════════════════════
+# 3. HEAD-TO-HEAD UNDER RATE
+# ═══════════════════════════════════════════════════════════════
+
+def _compute_h2h_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Pour chaque match, calcule le taux under 2.5 historique entre les deux équipes
+    en utilisant uniquement leurs confrontations passées (shift + expanding).
+    """
+    df = df.copy().sort_values('Date').reset_index(drop=True)
+
+    df['_goals_h2h'] = df['FTHG'] + df['FTAG']
+    df['_under_h2h'] = (df['_goals_h2h'] < 2.5).astype(float)
+
+    # Clé canonique : ordre alphabétique pour que A-B == B-A
+    df['_h2h_key'] = df.apply(
+        lambda r: '__'.join(sorted([r['HomeTeam'], r['AwayTeam']])), axis=1
+    )
+
+    global_rate = df['_under_h2h'].mean()
+
+    df['h2h_under_rate'] = (
+        df.groupby('_h2h_key', group_keys=False)['_under_h2h']
+        .transform(lambda x: x.shift(1).expanding(min_periods=2).mean())
+    )
+    df['h2h_under_rate'] = df['h2h_under_rate'].fillna(global_rate)
+
+    df = df.drop(columns=['_goals_h2h', '_under_h2h', '_h2h_key'], errors='ignore')
+    return df
+
+
+# ═══════════════════════════════════════════════════════════════
+# 3b. FIXTURE CONGESTION
+# ═══════════════════════════════════════════════════════════════
+
+def _compute_fixture_congestion(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Pour chaque match, calcule le nombre de jours depuis le dernier match
+    de l'équipe à domicile et de l'équipe extérieure.
+    Default = 7 jours (milieu de saison normal) quand aucune donnée passée.
+    """
+    df = df.copy()
+    df['_orig_idx'] = range(len(df))
+
+    home = df[['_orig_idx', 'Date', 'HomeTeam']].rename(
+        columns={'HomeTeam': 'team'})
+    home['side'] = 'h'
+
+    away = df[['_orig_idx', 'Date', 'AwayTeam']].rename(
+        columns={'AwayTeam': 'team'})
+    away['side'] = 'a'
+
+    long = pd.concat([home, away], ignore_index=True)
+    long = long.sort_values(['team', 'Date']).reset_index(drop=True)
+
+    long['prev_date'] = long.groupby('team')['Date'].shift(1)
+    long['days_rest'] = (long['Date'] - long['prev_date']).dt.days
+    long['days_rest'] = long['days_rest'].clip(upper=30).fillna(7)
+
+    for side in ['h', 'a']:
+        side_data = (long[long['side'] == side]
+                     .set_index('_orig_idx')['days_rest'])
+        df[f'{side}_days_rest'] = df['_orig_idx'].map(side_data)
+
+    df = df.drop(columns=['_orig_idx'], errors='ignore')
+    return df
+
+
+# ═══════════════════════════════════════════════════════════════
+# 4. CLASSEMENT DYNAMIQUE
 # ═══════════════════════════════════════════════════════════════
 
 def _compute_rankings(df: pd.DataFrame) -> pd.DataFrame:
@@ -154,7 +250,7 @@ def _compute_rankings(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ═══════════════════════════════════════════════════════════════
-# 3. MATCH IMPORTANCE
+# 5. MATCH IMPORTANCE
 # ═══════════════════════════════════════════════════════════════
 
 def _build_rivalries(rivals_csv: Optional[str]) -> set:
@@ -228,7 +324,7 @@ def _compute_match_importance(df: pd.DataFrame, rivalries: set,
 
 
 # ═══════════════════════════════════════════════════════════════
-# 4. PROBABILITÉS BOOKMAKER NO-VIG
+# 6. PROBABILITÉS BOOKMAKER NO-VIG
 # ═══════════════════════════════════════════════════════════════
 
 def _compute_novig_probs(df: pd.DataFrame) -> pd.DataFrame:
@@ -258,13 +354,15 @@ def _compute_novig_probs(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ═══════════════════════════════════════════════════════════════
-# 5. PIPELINE PRINCIPAL
+# 7. PIPELINE PRINCIPAL
 # ═══════════════════════════════════════════════════════════════
 
 def build_features(df_raw: pd.DataFrame,
                    rivals_csv: Optional[str] = None,
                    n_teams: int = 20) -> pd.DataFrame:
     df = _compute_team_rolling(df_raw)
+    df = _compute_h2h_features(df)
+    df = _compute_fixture_congestion(df)
     df = _compute_rankings(df)
 
     rivalries = _build_rivalries(rivals_csv)
@@ -289,6 +387,39 @@ def build_features(df_raw: pd.DataFrame,
     df['combined_goals_var']     = (df['h_goals_var_5']   + df['a_goals_var_5'])   / 2
     df['combined_avg_goals']     = (df['h_avg_total_goals'] + df['a_avg_total_goals']) / 2
     df['combined_low_score']     = (df['h_avg_low_score_rate'] + df['a_avg_low_score_rate']) / 2
+
+    # Qualité de tir : ratio SOT/shots (proxy xG sans données externes)
+    df['h_shot_acc']        = df['h_avg_sot'] / df['h_avg_shots'].clip(lower=0.5)
+    df['a_shot_acc']        = df['a_avg_sot'] / df['a_avg_shots'].clip(lower=0.5)
+    df['combined_shot_acc'] = (df['h_shot_acc'] + df['a_shot_acc']) / 2
+
+    # xG approximatif : SOT × taux de conversion moyen (~0.35 sur les divisions 1-2)
+    df['h_xg_proxy']        = df['h_avg_sot'] * 0.35
+    df['a_xg_proxy']        = df['a_avg_sot'] * 0.35
+    df['combined_xg_proxy'] = df['h_xg_proxy'] + df['a_xg_proxy']
+
+    # ── Features arbitre ──────────────────────────────────────────
+    # Taux under historique de chaque arbitre (rolling, sans data leakage)
+    if 'Referee' in df.columns:
+        df = _compute_referee_features(df)
+    else:
+        df['ref_under_rate'] = np.nan
+        df['ref_avg_goals']  = np.nan
+
+    # Fill NaN arbitre avec la médiane globale (ligues sans données arbitre,
+    # ou premiers matchs d'un arbitre avant d'avoir min_periods)
+    df['ref_under_rate'] = df['ref_under_rate'].fillna(df['ref_under_rate'].median())
+    df['ref_avg_goals']  = df['ref_avg_goals'].fillna(df['ref_avg_goals'].median())
+
+    # ── Signal marché : écart Max/Avg ─────────────────────────────
+    # Un écart élevé Max<2.5/Avg<2.5 indique que de l'argent "sharp"
+    # a bougé la cote — signal d'information sur le résultat probable.
+    if 'Max<2.5' in df.columns and 'Avg<2.5' in df.columns:
+        df['odds_spread_under'] = (
+            df['Max<2.5'] / df['Avg<2.5'].replace(0, np.nan)
+        ).fillna(1.0)
+    else:
+        df['odds_spread_under'] = 1.0
 
     print(f'  Features : {df.shape[1]} colonnes | {len(df)} matchs | '
           f'over={df["over_25"].mean():.1%} under={df["under_25"].mean():.1%}')
