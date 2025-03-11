@@ -7,7 +7,6 @@ Un value bet existe quand :
     prob_modèle > prob_implicite_bookmaker + edge_min
 
 Inclut un test de significativité statistique du ROI (bootstrap + t-test).
-Supporte un seuil edge variable et un filtre sur les cotes.
 """
 
 import pandas as pd
@@ -25,25 +24,11 @@ from scipy import stats as scipy_stats
 def detect_value_bets(df: pd.DataFrame,
                       edge_min: float = 0.03,
                       prob_col: str = 'prob_model',
-                      bookie_col: str = 'prob_bookie',
-                      odds_col: str = None,
-                      odds_min: float = None,
-                      odds_max: float = None) -> pd.DataFrame:
+                      bookie_col: str = 'prob_bookie') -> pd.DataFrame:
     df = df.copy()
     df['edge'] = df[prob_col] - df[bookie_col]
-    mask = df['edge'] >= edge_min
-
-    if odds_col is not None and odds_col in df.columns:
-        if odds_min is not None:
-            mask &= df[odds_col] >= odds_min
-        if odds_max is not None:
-            mask &= df[odds_col] <= odds_max
-
-    value_bets = df[mask].copy()
-    filter_info = (f' | cotes [{odds_min or ""}–{odds_max or ""}]'
-                   if odds_min or odds_max else '')
-    print(f'  Value bets edge≥{edge_min:.0%}{filter_info} : '
-          f'{len(value_bets)}/{len(df)} ({len(value_bets)/len(df):.1%})')
+    value_bets = df[df['edge'] >= edge_min].copy()
+    print(f'  Value bets edge≥{edge_min:.0%} : {len(value_bets)}/{len(df)} ({len(value_bets)/len(df):.1%})')
     return value_bets
 
 

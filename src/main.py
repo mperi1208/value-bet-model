@@ -30,7 +30,7 @@ DEFAULT_MODEL  = os.path.join(_HERE, 'model.pkl')
 DEFAULT_EDGE   = 0.05
 
 # Ligues Div2 exclues du périmètre de paris (ROI systématiquement mauvais en backtest)
-EXCLUDED_DIVS  = {'D2', 'SP2', 'I2'}
+EXCLUDED_DIVS  = {'D2'}
 
 
 def run_full(csv_root, rivals_csv, edge_min, model_out,
@@ -89,8 +89,7 @@ def run_full(csv_root, rivals_csv, edge_min, model_out,
         df_wf_clean = df_wf_clean[~df_wf_clean['Div'].isin(EXCLUDED_DIVS)].copy()
         print(f'  Ligues exclues {EXCLUDED_DIVS} : {before_excl - len(df_wf_clean)} matchs retirés')
 
-    vb = detect_value_bets(df_wf_clean, edge_min=edge_min,
-                           odds_col=odds_col, odds_min=1.65, odds_max=2.35)
+    vb = detect_value_bets(df_wf_clean, edge_min=edge_min)
     if len(vb) == 0:
         print('Aucun value bet. Baisse le seuil edge.')
         return

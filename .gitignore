@@ -3,6 +3,7 @@ csv/
 *.pyc
 __pycache__/
 .DS_Store
+.claude/
 {src,docs,csv}/
 value_bets_*.csv
 understat_xg.csv

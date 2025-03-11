@@ -102,7 +102,7 @@ def load_all(csv_root: str) -> pd.DataFrame:
                 print(f'  Erreur {fpath} : {e}')
 
     if not frames:
-        raise ValueError('Aucun fichier chargé. Vérifie csv_root.')
+        raise ValueError('Aucun fichier charge. Verifie csv_root.')
 
     df_all = pd.concat(frames, ignore_index=True)
     df_all = _clean(df_all)

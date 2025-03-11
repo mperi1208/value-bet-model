@@ -1,10 +1,8 @@
 # Value Bet Model — Can ML Beat the Bookmakers?
 
-![Python](https://img.shields.io/badge/python-3.11-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![XGBoost](https://img.shields.io/badge/XGBoost-3.0-orange)
-
 A rigorous, iterative machine learning investigation into whether publicly available data can generate profitable betting signals on European football markets.
 
-**Short answer: no.** After 5 model iterations, 4 feature enrichment strategies, and 25 seasons of out-of-sample testing across 10 leagues, the bookmaker closing line remains unbeatable with public data. This repository documents the complete scientific process — from false positive to confirmed null result.
+**Short answer: no.** After 4 model iterations, 3 feature enrichment strategies, and 25 seasons of out-of-sample testing across 10 leagues, the bookmaker closing line remains unbeatable with public data. This repository documents the complete scientific process — from false positive to confirmed null result.
 
 ---
 
@@ -18,9 +16,8 @@ Each version adds new information to the model while keeping the same rigorous w
 | **v2** | Fixed calibration (Platt), reduced features | 21 lean features | Under 2.5 (Div2) |
 | **v3** | Added inter-bookmaker disagreement signals | 25 features | Under 2.5 (Div2) |
 | **v4** | Added expected goals from Understat | 28 features | Draw (Div1) |
-| **v5** | H2H history, fixture congestion, referee stats, odds spread + league filter | 53 features | Under 2.5 (E1+F2) |
 
-The current codebase is the **v5 pipeline** incorporating all lessons learned.
+The current codebase is the **final refactored pipeline** incorporating all lessons learned.
 
 ---
 
@@ -28,9 +25,9 @@ The current codebase is the **v5 pipeline** incorporating all lessons learned.
 
 The model's ability to discriminate between outcomes barely improves across iterations, and never reaches the profitable threshold (~0.58 AUC).
 
-![AUC across versions](docs/01_auc_v2.png)
+![AUC across versions](docs/01_auc.png)
 
-With an AUC ranging from 0.535 to 0.5601, the model cannot generate enough *separation* between value bets and non-value bets to overcome the 5–8% bookmaker margin. Adding market features (v3) gave the best single-step improvement (+0.019), xG (v4) added nothing, but the richer v5 feature set (H2H history, fixture congestion, referee stats, odds spread) pushed AUC to its highest point at 0.5601.
+With an AUC stuck around 0.535–0.554, the model cannot generate enough *separation* between value bets and non-value bets to overcome the 5–8% bookmaker margin. Adding market features (v3) gave the best improvement (+0.02), but xG (v4) added nothing — the information was already captured by goals scored/conceded.
 
 ---
 
@@ -38,9 +35,9 @@ With an AUC ranging from 0.535 to 0.5601, the model cannot generate enough *sepa
 
 Every version loses money. The trend improves slightly, but never crosses zero.
 
-![ROI across versions](docs/02_roi_v2.png)
+![ROI across versions](docs/02_roi.png)
 
-The improvement from v1 (−7.9%) to v5 (−3.2%) is mostly due to better calibration and smarter league selection — not because the model found a real edge. Restricting to E1 and F2 (the two leagues where the model's signal is most consistent) accounts for the final gain.
+The improvement from v1 (−7.9%) to v4 (−4.5%) is mostly due to better calibration reducing the number of false value bets, not because the model found a real edge.
 
 ---
 
@@ -64,21 +61,21 @@ The green dashed line shows what we'd expect from a model with a real edge. The 
 
 ---
 
-## Result 5 — Goals-based features dominate, market spread confirms the signal
+## Result 5 — Market features dominate (v3)
 
-In v5, `h_avg_goals_scored` ranks first and `odds_spread_under` (Max<2.5 / Avg<2.5) ranks second — confirming that both the statistical signal and the market's own uncertainty are informative, yet insufficient.
+In v3, inter-bookmaker disagreement (`mkt_dispersion`, `max_avg_ratio`) ranked above all statistical features. The market's own uncertainty signal is more informative than rolling averages, rankings, or xG.
 
-![Feature importance](docs/05_features_v2.png)
+![Feature importance](docs/05_features.png)
 
-The odds spread measures how much sharp money has moved the under line relative to the average bookmaker. When this ratio is high, the market is signalling genuine uncertainty — a useful but not sufficient discriminator. All other top features are goal and shot-based rolling averages, consistent across all versions.
+This makes sense: bookmaker odds already *encode* all public statistics. The only marginal information comes from measuring how much bookmakers *disagree* with each other — but even this isn't enough to generate a profitable edge. The final pipeline drops market features as model inputs to keep the model independent from real-time odds data.
 
 ---
 
 ## Result 6 — No consistent league-level edge
 
-Across the four Div2 leagues tested on the Under 2.5 market, only Ligue 2 shows a positive ROI (+1.4%) on 197 bets — statistically indistinguishable from noise (p-value > 0.5). Serie B (I2) and Segunda División (SP2) are strongly negative, dragging the overall result down. The final pipeline restricts betting to E1 and F2.
+Only Serie A shows a positive ROI (+4.2%) on the draw market, but with 353 bets and a p-value of 0.31, this is indistinguishable from noise.
 
-![League breakdown](docs/06_leagues_v2.png)
+![League breakdown](docs/06_leagues.png)
 
 ---
 
@@ -109,7 +106,7 @@ Season N-k → N-2      Season N-1      Season N
 ### Model
 
 - **XGBoost** (conservative: `max_depth=4`, `min_child_weight=8`) with **Platt calibration** (sigmoid)
-- Features: rolling team stats (goals, shots, under-rate, variance), dynamic league rankings, shot accuracy xG proxy, head-to-head under rate, fixture congestion (days rest), referee under-rate history, bookmaker odds spread (Max/Avg), no-vig bookmaker probabilities — 53 features total
+- Features: rolling team stats (goals, shots, under-rate, variance), dynamic league rankings, shot accuracy xG proxy, bookmaker no-vig probabilities
 - Edge = `P(model) − P(no-vig bookie)`
 
 ### Data
@@ -139,16 +136,13 @@ value-bet-model/
 ├── src/
 │   ├── download.py             # Auto-download from football-data.co.uk (25 seasons × 10 leagues)
 │   ├── load.py                 # Data loading & cleaning
-│   ├── features.py             # Feature engineering (rolling stats, H2H, congestion, referee, odds spread)
-│   ├── model.py                # XGBoost + walk-forward + Platt calibration (53 features)
+│   ├── features.py             # Feature engineering (rolling stats, rankings, xG proxy)
+│   ├── model.py                # XGBoost + walk-forward + Platt calibration
 │   ├── backtest.py             # ROI simulation, significance tests, edge optimisation
-│   ├── main.py                 # Under 2.5 pipeline (E1 + F2)
+│   ├── main.py                 # Under 2.5 pipeline (Div2)
 │   ├── draw_pipeline.py        # Draw pipeline (Div1)
 │   └── scrape_understat.py     # Selenium-based xG scraper
-├── docs/
-│   ├── generate_plots.py       # Regenerate all diagnostic plots
-│   └── *.png                   # AUC, ROI, calibration, edge, feature importance, league breakdown
-├── LICENSE
+├── docs/                       # Diagnostic plots (AUC, ROI, calibration, feature importance)
 ├── requirements.txt
 └── README.md
 ```
