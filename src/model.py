@@ -173,7 +173,7 @@ def feature_importance(model, top_n: int = 15):
 
 def save_model(model, path: str = 'model.pkl'):
     joblib.dump(model, path)
-    print(f'Modele sauvegarde -> {path}')
+    print(f'Modèle sauvegardé -> {path}')
 
 
 def load_model(path: str = 'model.pkl'):

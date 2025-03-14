@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate individual plots for the README — dark theme, one per file."""
 
+import os
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -21,7 +22,7 @@ plt.rcParams.update({
 })
 
 ACCENT, RED, GREEN, YELLOW, ORANGE, PURPLE = "#58A6FF", "#F85149", "#3FB950", "#D29922", "#F0883E", "#BC8CFF"
-OUT = "/home/claude/value-bet-model/docs"
+OUT = os.path.dirname(os.path.abspath(__file__))
 versions = ["v1\nOriginal\n(56 feat.)", "v2\nPlatt calib.\n(21 feat.)", "v3\n+ Market\n(25 feat.)", "v4\n+ xG\n(28 feat.)"]
 
 # 1. AUC
