@@ -75,7 +75,7 @@ This makes sense: bookmaker odds already *encode* all public statistics. The onl
 
 Only Serie A shows a positive ROI (+4.2%) on the draw market, but with 353 bets and a p-value of 0.31, this is indistinguishable from noise.
 
-![League breakdown](docs/06_leagues.png)
+![League breakdown](docs/06_leagues_v2.png)
 
 ---
 

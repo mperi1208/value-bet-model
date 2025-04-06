@@ -122,7 +122,12 @@ cl = [GREEN if r >= 0 else RED for r in rl]
 ax.barh(range(5), rl, color=cl, edgecolor="#30363D", height=0.5, alpha=0.9)
 ax.axvline(0, color="#8B949E", ls="-", lw=1)
 for i, v in enumerate(rl):
-    ax.text(v + (0.5 if v >= 0 else -0.5), i, f"{v:+.1f}%", va="center", fontsize=11, fontweight="bold", ha="left" if v >= 0 else "right", color=cl[i])
+    if v >= 0:
+        ax.text(v + 0.5, i, f"{v:+.1f}%", va="center", fontsize=11, fontweight="bold", ha="left", color=cl[i])
+    elif v < -8:
+        ax.text(v + 0.5, i, f"{v:+.1f}%", va="center", fontsize=11, fontweight="bold", ha="left", color="#0D1117")
+    else:
+        ax.text(v - 0.5, i, f"{v:+.1f}%", va="center", fontsize=11, fontweight="bold", ha="right", color=cl[i])
 ax.set_yticks(range(5)); ax.set_yticklabels(lg, fontsize=11)
 ax.set_xlabel("ROI (%)"); ax.set_title("Draw Market ROI by League (v4 + xG)", fontsize=14, fontweight="bold", color="#F0F6FC", pad=15)
 ax.grid(axis="x", alpha=0.3); plt.tight_layout()
