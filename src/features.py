@@ -7,6 +7,7 @@ Construit toutes les features pour le modèle under 2.5 :
   - Match importance (rivalités, enjeux, avancement saison)
   - Probabilités bookmaker no-vig
   - prob_bookie N'EST PAS initialisé ici (assigné dans main.py selon le marché)
+  - Toutes les features sont shift(1) pour éviter le data leakage
 """
 
 import os
@@ -140,6 +141,74 @@ def _compute_referee_features(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     df = df.drop(columns=['total_goals', 'is_under'], errors='ignore')
+    return df
+
+
+# ═══════════════════════════════════════════════════════════════
+# 3. HEAD-TO-HEAD UNDER RATE
+# ═══════════════════════════════════════════════════════════════
+
+def _compute_h2h_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Pour chaque match, calcule le taux under 2.5 historique entre les deux équipes
+    en utilisant uniquement leurs confrontations passées (shift + expanding).
+    """
+    df = df.copy().sort_values('Date').reset_index(drop=True)
+
+    df['_goals_h2h'] = df['FTHG'] + df['FTAG']
+    df['_under_h2h'] = (df['_goals_h2h'] < 2.5).astype(float)
+
+    # Clé canonique : ordre alphabétique pour que A-B == B-A
+    df['_h2h_key'] = df.apply(
+        lambda r: '__'.join(sorted([r['HomeTeam'], r['AwayTeam']])), axis=1
+    )
+
+    global_rate = df['_under_h2h'].mean()
+
+    df['h2h_under_rate'] = (
+        df.groupby('_h2h_key', group_keys=False)['_under_h2h']
+        .transform(lambda x: x.shift(1).expanding(min_periods=2).mean())
+    )
+    df['h2h_under_rate'] = df['h2h_under_rate'].fillna(global_rate)
+
+    df = df.drop(columns=['_goals_h2h', '_under_h2h', '_h2h_key'], errors='ignore')
+    return df
+
+
+# ═══════════════════════════════════════════════════════════════
+# 3b. FIXTURE CONGESTION
+# ═══════════════════════════════════════════════════════════════
+
+def _compute_fixture_congestion(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Pour chaque match, calcule le nombre de jours depuis le dernier match
+    de l'équipe à domicile et de l'équipe extérieure.
+    Default = 7 jours (milieu de saison normal) quand aucune donnée passée.
+    """
+    df = df.copy()
+    df['_orig_idx'] = range(len(df))
+
+    home = df[['_orig_idx', 'Date', 'HomeTeam']].rename(
+        columns={'HomeTeam': 'team'})
+    home['side'] = 'h'
+
+    away = df[['_orig_idx', 'Date', 'AwayTeam']].rename(
+        columns={'AwayTeam': 'team'})
+    away['side'] = 'a'
+
+    long = pd.concat([home, away], ignore_index=True)
+    long = long.sort_values(['team', 'Date']).reset_index(drop=True)
+
+    long['prev_date'] = long.groupby('team')['Date'].shift(1)
+    long['days_rest'] = (long['Date'] - long['prev_date']).dt.days
+    long['days_rest'] = long['days_rest'].clip(upper=30).fillna(7)
+
+    for side in ['h', 'a']:
+        side_data = (long[long['side'] == side]
+                     .set_index('_orig_idx')['days_rest'])
+        df[f'{side}_days_rest'] = df['_orig_idx'].map(side_data)
+
+    df = df.drop(columns=['_orig_idx'], errors='ignore')
     return df
 
 
@@ -293,6 +362,8 @@ def build_features(df_raw: pd.DataFrame,
                    rivals_csv: Optional[str] = None,
                    n_teams: int = 20) -> pd.DataFrame:
     df = _compute_team_rolling(df_raw)
+    df = _compute_h2h_features(df)
+    df = _compute_fixture_congestion(df)
     df = _compute_rankings(df)
 
     rivalries = _build_rivalries(rivals_csv)

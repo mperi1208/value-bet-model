@@ -38,6 +38,14 @@ FEATURE_COLS = [
     # Qualité de tir (proxy xG)
     'h_shot_acc', 'a_shot_acc', 'combined_shot_acc',
     'h_xg_proxy', 'a_xg_proxy', 'combined_xg_proxy',
+    # Arbitre
+    'ref_under_rate', 'ref_avg_goals',
+    # Signal marché (mouvement de cote)
+    'odds_spread_under',
+    # Head-to-head historique entre les deux équipes
+    'h2h_under_rate',
+    # Fixture congestion (jours de repos)
+    'h_days_rest', 'a_days_rest',
 ]
 
 TARGET = 'under_25'
