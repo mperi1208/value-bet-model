@@ -217,6 +217,7 @@ def build_model() -> CalibratedClassifierCV:
         reg_lambda=1.5,
         scale_pos_weight=2.0,
         eval_metric="logloss",
+        use_label_encoder=False,
         random_state=RANDOM_STATE,
         n_jobs=-1,
     )

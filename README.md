@@ -1,7 +1,5 @@
 # Value Bet Model — Can ML Beat the Bookmakers?
 
-![Python](https://img.shields.io/badge/python-3.11-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![XGBoost](https://img.shields.io/badge/XGBoost-3.0-orange)
-
 A rigorous, iterative machine learning investigation into whether publicly available data can generate profitable betting signals on European football markets.
 
 **Short answer: no.** After 5 model iterations, 4 feature enrichment strategies, and 25 seasons of out-of-sample testing across 10 leagues, the bookmaker closing line remains unbeatable with public data. This repository documents the complete scientific process — from false positive to confirmed null result.
@@ -30,7 +28,7 @@ The model's ability to discriminate between outcomes barely improves across iter
 
 ![AUC across versions](docs/01_auc_v2.png)
 
-With an AUC ranging from 0.535 to 0.5601, the model cannot generate enough *separation* between value bets and non-value bets to overcome the 5–8% bookmaker margin. Adding market features (v3) gave the best single-step improvement (+0.019), xG (v4) added nothing, but the richer v5 feature set (H2H history, fixture congestion, referee stats, odds spread) pushed AUC to its highest point at 0.5601.
+With an AUC ranging from 0.535 to 0.560, the model cannot generate enough *separation* between value bets and non-value bets to overcome the 5–8% bookmaker margin. Adding market features (v3) gave a strong improvement (+0.02), xG (v4) added nothing, but the richer v5 feature set (H2H history, fixture congestion, referee stats, odds spread) pushed AUC to its highest point at 0.560.
 
 ---
 
@@ -139,16 +137,13 @@ value-bet-model/
 ├── src/
 │   ├── download.py             # Auto-download from football-data.co.uk (25 seasons × 10 leagues)
 │   ├── load.py                 # Data loading & cleaning
-│   ├── features.py             # Feature engineering (rolling stats, H2H, congestion, referee, odds spread)
-│   ├── model.py                # XGBoost + walk-forward + Platt calibration (53 features)
+│   ├── features.py             # Feature engineering (rolling stats, rankings, xG proxy)
+│   ├── model.py                # XGBoost + walk-forward + Platt calibration
 │   ├── backtest.py             # ROI simulation, significance tests, edge optimisation
-│   ├── main.py                 # Under 2.5 pipeline (E1 + F2)
+│   ├── main.py                 # Under 2.5 pipeline (Div2)
 │   ├── draw_pipeline.py        # Draw pipeline (Div1)
 │   └── scrape_understat.py     # Selenium-based xG scraper
-├── docs/
-│   ├── generate_plots.py       # Regenerate all diagnostic plots
-│   └── *.png                   # AUC, ROI, calibration, edge, feature importance, league breakdown
-├── LICENSE
+├── docs/                       # Diagnostic plots (AUC, ROI, calibration, feature importance)
 ├── requirements.txt
 └── README.md
 ```
