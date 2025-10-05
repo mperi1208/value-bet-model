@@ -2,11 +2,12 @@
 features.py
 -----------
 Construit toutes les features pour le modèle under 2.5 :
-  - Stats rolling par équipe (buts, tirs, under-rate, variance)
-  - Classement dynamique intra-saison
+  - Stats rolling par équipe (buts, tirs, under-rate, variance) sur 5 et 10 matchs
+  - Classement dynamique intra-saison (points, goal diff)
   - Match importance (rivalités, enjeux, avancement saison)
   - Probabilités bookmaker no-vig
   - prob_bookie N'EST PAS initialisé ici (assigné dans main.py selon le marché)
+  - Toutes les features sont shift(1) pour éviter le data leakage
 """
 
 import os
