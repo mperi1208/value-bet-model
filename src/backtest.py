@@ -4,7 +4,7 @@ backtest.py
 Détecte les value bets et simule le ROI sur le jeu de test.
 
 Un value bet existe quand :
-    prob_modèle > prob_implicite_bookmaker + edge_min
+    prob_modèle > prob_implicite_bookmaker + edge_min  (défaut : 5%)
 
 Inclut un test de significativité statistique du ROI (bootstrap + t-test).
 Supporte un seuil edge variable et un filtre sur les cotes.
