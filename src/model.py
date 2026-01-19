@@ -2,9 +2,9 @@
 model.py
 --------
 Walk-forward XGBoost calibré pour la prédiction under 2.5 :
-  - TARGET fixé à under_25 (binaire : 1 si total buts < 3, 0 sinon)
+  - TARGET fixé à under_25
   - prob_bookie absent des features (indépendance du modèle)
-  - scale_pos_weight pour rééquilibrer under/over (ratio ~1.4 en Div2)
+  - scale_pos_weight pour rééquilibrer under/over
   - Calibration sigmoid sur le fold de validation (moins sujette à l'overfitting
     que l'isotonique sur de petits jeux de calibration)
 """

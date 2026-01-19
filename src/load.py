@@ -2,11 +2,8 @@
 load.py
 -------
 Charge tous les CSV depuis csv/{DIV}/{DIV}-{N}.csv.
-Trie par date après chargement pour garantir l'ordre chronologique.
 Sépare div1 (entraînement) et div2 (value bet cible).
-Div1 uniquement pour élargir la base d'entraînement — jamais pour backtester.
 Gère les différences de colonnes entre fichiers récents et anciens.
-Filtre les colonnes inutiles pour réduire l'empreinte mémoire.
 """
 
 import os
