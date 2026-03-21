@@ -132,64 +132,93 @@ def build_features(df_raw: pd.DataFrame) -> pd.DataFrame:
     else:
         df = df.sort_values(["league", "filename"]).reset_index(drop=True)
 
-    records = []
+    # Format long : une ligne par (match, équipe)
+    home = df[["league", "filename", "_date", "HomeTeam", "FTHG", "FTAG", "FTR"]].copy()
+    home.columns = ["league", "filename", "_date", "team", "scored", "conceded", "FTR"]
+    home["is_home"]  = True
+    home["orig_idx"] = df.index
 
-    for (league, fname), block in df.groupby(["league", "filename"]):
-        block   = block.reset_index(drop=True)
-        history = {}
+    away = df[["league", "filename", "_date", "AwayTeam", "FTAG", "FTHG", "FTR"]].copy()
+    away.columns = ["league", "filename", "_date", "team", "scored", "conceded", "FTR"]
+    away["is_home"]  = False
+    away["orig_idx"] = df.index
 
-        for _, row in block.iterrows():
-            h, a   = row["HomeTeam"], row["AwayTeam"]
-            hg, ag = int(row["FTHG"]), int(row["FTAG"])
-            feat   = {"league": league, "filename": fname}
+    long = pd.concat([home, away], ignore_index=True)
+    long = long.sort_values(["league", "filename", "team", "_date"]).reset_index(drop=True)
 
-            for w in ROLLING_WINDOWS:
-                for team, scored, conceded, side in [
-                    (h, hg, ag, "home"),
-                    (a, ag, hg, "away"),
-                ]:
-                    hist   = history.get(team, [])
-                    recent = hist[-w:]
-                    n      = len(recent)
+    long["is_draw"]   = (long["FTR"] == "D").astype(float)
+    long["is_win"]    = (
+        (long["is_home"] & (long["FTR"] == "H")) |
+        (~long["is_home"] & (long["FTR"] == "A"))
+    ).astype(float)
+    long["is_loss"]   = (
+        (long["is_home"] & (long["FTR"] == "A")) |
+        (~long["is_home"] & (long["FTR"] == "H"))
+    ).astype(float)
+    long["goal_diff"] = long["scored"] - long["conceded"]
 
-                    feat[f"{side}_draw_rate_{w}"]     = np.mean([x[2] for x in recent]) if n else np.nan
-                    feat[f"{side}_avg_scored_{w}"]    = np.mean([x[0] for x in recent]) if n else np.nan
-                    feat[f"{side}_avg_conceded_{w}"]  = np.mean([x[1] for x in recent]) if n else np.nan
-                    feat[f"{side}_avg_goal_diff_{w}"] = np.mean([x[0]-x[1] for x in recent]) if n else np.nan
-                    feat[f"{side}_win_rate_{w}"]      = np.mean([x[0]>x[1] for x in recent]) if n else np.nan
-                    feat[f"{side}_loss_rate_{w}"]     = np.mean([x[0]<x[1] for x in recent]) if n else np.nan
+    grp      = ["league", "filename", "team"]
+    raw_cols = ["is_draw", "is_win", "is_loss", "scored", "conceded", "goal_diff"]
+    col_map  = {
+        "is_draw":   "draw_rate",
+        "is_win":    "win_rate",
+        "is_loss":   "loss_rate",
+        "scored":    "avg_scored",
+        "conceded":  "avg_conceded",
+        "goal_diff": "avg_goal_diff",
+    }
 
-            for w in ROLLING_WINDOWS:
-                feat[f"combined_draw_rate_{w}"] = (
-                    (feat.get(f"home_draw_rate_{w}", 0) +
-                     feat.get(f"away_draw_rate_{w}", 0)) / 2
-                )
-                feat[f"goal_diff_gap_{w}"] = abs(
-                    feat.get(f"home_avg_goal_diff_{w}", 0) -
-                    feat.get(f"away_avg_goal_diff_{w}", 0)
-                )
-                feat[f"combined_goals_{w}"] = (
-                    feat.get(f"home_avg_scored_{w}", 0) +
-                    feat.get(f"away_avg_scored_{w}", 0)
-                )
+    # Rolling stats vectorisées (shift(1) pour éviter le data leakage)
+    for w in ROLLING_WINDOWS:
+        for col in raw_cols:
+            long[f"_{col}_{w}"] = (
+                long.groupby(grp, group_keys=False)[col]
+                .transform(lambda x, w=w: x.shift(1).rolling(w, min_periods=1).mean())
+            )
 
-            # Implied probability as feature (market signal — disponible pre-match)
-            feat["implied_prob_draw"] = row["implied_prob_draw"]
-            feat["odds_draw"]         = row["odds_draw"]
-            feat["draw_target"]       = row["draw"]
+    roll_cols   = [f"_{col}_{w}" for w in ROLLING_WINDOWS for col in raw_cols]
+    long_sub    = long[["orig_idx", "is_home"] + roll_cols]
 
-            records.append(feat)
+    home_rename = {f"_{col}_{w}": f"home_{name}_{w}"
+                   for w in ROLLING_WINDOWS for col, name in col_map.items()}
+    away_rename = {f"_{col}_{w}": f"away_{name}_{w}"
+                   for w in ROLLING_WINDOWS for col, name in col_map.items()}
 
-            # Mise à jour historique APRÈS extraction (no leakage)
-            is_draw = int(hg == ag)
-            for team, scored, conceded in [(h, hg, ag), (a, ag, hg)]:
-                history.setdefault(team, []).append((scored, conceded, is_draw))
+    home_stats = (long_sub[long_sub["is_home"]]
+                  .drop(columns="is_home").set_index("orig_idx")
+                  .rename(columns=home_rename))
+    away_stats = (long_sub[~long_sub["is_home"]]
+                  .drop(columns="is_home").set_index("orig_idx")
+                  .rename(columns=away_rename))
 
-    result = pd.DataFrame(records)
+    df = df.join(home_stats).join(away_stats)
+
+    for w in ROLLING_WINDOWS:
+        df[f"combined_draw_rate_{w}"] = (
+            (df[f"home_draw_rate_{w}"].fillna(0) + df[f"away_draw_rate_{w}"].fillna(0)) / 2
+        )
+        df[f"goal_diff_gap_{w}"] = (
+            df[f"home_avg_goal_diff_{w}"].fillna(0) - df[f"away_avg_goal_diff_{w}"].fillna(0)
+        ).abs()
+        df[f"combined_goals_{w}"] = (
+            df[f"home_avg_scored_{w}"].fillna(0) + df[f"away_avg_scored_{w}"].fillna(0)
+        )
+
+    df["draw_target"] = df["draw"]
+
     le = LabelEncoder()
-    result["league_enc"] = le.fit_transform(result["league"])
+    df["league_enc"] = le.fit_transform(df["league"])
 
-    return result
+    feat_cols = (
+        [f"home_{name}_{w}" for w in ROLLING_WINDOWS for name in col_map.values()] +
+        [f"away_{name}_{w}" for w in ROLLING_WINDOWS for name in col_map.values()] +
+        [f"combined_draw_rate_{w}" for w in ROLLING_WINDOWS] +
+        [f"goal_diff_gap_{w}"      for w in ROLLING_WINDOWS] +
+        [f"combined_goals_{w}"     for w in ROLLING_WINDOWS] +
+        ["league_enc"]
+    )
+    keep = ["league", "filename", "draw_target", "implied_prob_draw", "odds_draw"] + feat_cols
+    return df[[c for c in keep if c in df.columns]].reset_index(drop=True)
 
 
 def get_feature_cols(df: pd.DataFrame) -> list:
