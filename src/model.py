@@ -116,8 +116,7 @@ def train_model(train: pd.DataFrame, val: pd.DataFrame):
 
     # Calibration sigmoid (Platt scaling) — plus régularisée qu'isotonique
     # sur de petits sets de calibration, réduit la surconfiance sélective.
-    from sklearn.frozen import FrozenEstimator
-    calibrated = CalibratedClassifierCV(FrozenEstimator(xgb_model), method='sigmoid')
+    calibrated = CalibratedClassifierCV(xgb_model, method='sigmoid', cv='prefit')
     calibrated.fit(X_val, y_val)
     return calibrated
 

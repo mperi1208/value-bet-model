@@ -393,9 +393,9 @@ def build_features(df_raw: pd.DataFrame,
     df['a_shot_acc']        = df['a_avg_sot'] / df['a_avg_shots'].clip(lower=0.5)
     df['combined_shot_acc'] = (df['h_shot_acc'] + df['a_shot_acc']) / 2
 
-    # xG approximatif : SOT × taux de conversion moyen (~0.35 sur les divisions 1-2)
-    df['h_xg_proxy']        = df['h_avg_sot'] * 0.35
-    df['a_xg_proxy']        = df['a_avg_sot'] * 0.35
+    # xG approximatif : SOT × taux de conversion moyen (~0.11 sur les divisions 1-2)
+    df['h_xg_proxy']        = df['h_avg_sot'] * 0.11
+    df['a_xg_proxy']        = df['a_avg_sot'] * 0.11
     df['combined_xg_proxy'] = df['h_xg_proxy'] + df['a_xg_proxy']
 
     # ── Features arbitre ──────────────────────────────────────────

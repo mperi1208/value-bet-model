@@ -2,11 +2,11 @@
 draw_pipeline.py
 ================
 Value bet detection — Match Draw market (Div1)
-XGBoost + isotonic calibration (cv=3) + walk-forward validation
+XGBoost + sigmoid calibration (cv=3) + walk-forward validation
 
-Note: this pipeline uses isotonic calibration with k-fold cross-validation
-(cv=3), which differs from the earlier cv='prefit' approach that produced a
-spurious +8.81% ROI by overfitting on small external calibration sets.
+Note: this pipeline uses Platt scaling (sigmoid) with k-fold cross-validation
+(cv=3), which avoids the overfitting observed with isotonic calibration on
+small calibration sets (spurious +8.81% ROI in earlier versions).
 See README for the full analysis.
 
 Usage:
@@ -221,7 +221,7 @@ def build_model() -> CalibratedClassifierCV:
         n_jobs=-1,
     )
     # cv=3 avec random_state pour reproductibilité
-    return CalibratedClassifierCV(base, method="isotonic", cv=3)
+    return CalibratedClassifierCV(base, method="sigmoid", cv=3)
 
 
 # ─────────────────────────────────────────────
