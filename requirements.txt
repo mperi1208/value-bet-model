@@ -8,3 +8,4 @@ joblib==1.4.2
 selenium==4.32.0
 requests==2.32.3
 beautifulsoup4==4.13.4
+playwright-stealth==2.0.3
