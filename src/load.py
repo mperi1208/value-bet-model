@@ -54,8 +54,11 @@ def load_all(csv_root: str) -> pd.DataFrame:
                 # Tentative 1 : utf-8 strict
                 # Tentative 2 : latin-1 (encodage Windows courant)
                 # on_bad_lines='skip' ignore les lignes avec trop de colonnes
+                # utf-8-sig en premier : 'utf-8' seul ne strippe pas le BOM
+                # des fichiers récents → la colonne 'Div' devenait '﻿Div'
+                # et les fichiers concernés perdaient leur ligue (bug audit)
                 df_raw = None
-                for encoding in ('utf-8', 'latin-1', 'cp1252', 'iso-8859-1'):
+                for encoding in ('utf-8-sig', 'utf-8', 'latin-1', 'cp1252', 'iso-8859-1'):
                     try:
                         df_raw = pd.read_csv(
                             fpath,

@@ -28,8 +28,19 @@ Limites honnêtes :
   - les cotes football-data sont des snapshots : l'exécution réelle diffère.
 
 Usage :
-    python value_bet_sharp.py                          # tous marchés, EV 0.02
+    python value_bet_sharp.py                          # backtest, tous marchés
     python value_bet_sharp.py --markets 1x2 --ev 0.05
+    python value_bet_sharp.py --predict                # fixtures à venir
+                                                       # → append paper_trades.csv
+    python value_bet_sharp.py --evaluate               # évalue les paper trades
+                                                       # (résultats + CLV)
+
+Workflow forward test (à lancer chaque vendredi, p.ex. en cron) :
+    --predict logge les paris fictifs détectés sur les fixtures publiées par
+    football-data.co.uk/fixtures.csv ; --evaluate les settle une fois les
+    résultats disponibles dans csv/ (après --download du pipeline principal)
+    et calcule le CLV réalisé. Trois mois de CLV positif en paper trading
+    valent plus que 13 saisons de backtest.
 """
 
 import argparse
@@ -67,13 +78,21 @@ BB_FALLBACKS = [('MaxH', 'BbMxH'), ('MaxD', 'BbMxD'), ('MaxA', 'BbMxA'),
 def load_odds(csv_root: str) -> pd.DataFrame:
     frames = []
     for f in glob.glob(os.path.join(csv_root, '*', '*.csv')):
-        try:
-            d = pd.read_csv(f, low_memory=False, encoding='latin-1',
-                            on_bad_lines='skip')
-        except Exception:
+        # utf-8-sig d'abord : les fichiers récents ont un BOM qui, lu en
+        # latin-1, corrompt le nom de la première colonne ('ï»¿Div')
+        d = None
+        for enc in ('utf-8-sig', 'latin-1'):
+            try:
+                d = pd.read_csv(f, low_memory=False, encoding=enc,
+                                on_bad_lines='skip')
+                if 'Div' in d.columns:
+                    break
+            except Exception:
+                continue
+        if d is None:
             continue
         keep = [c for c in KEY_COLS + ODDS_COLS if c in d.columns]
-        if 'FTR' not in keep:
+        if 'FTR' not in keep or 'Div' not in keep:
             continue
         frames.append(d[keep])
 
@@ -220,6 +239,136 @@ MARKETS = {'1x2': bets_1x2, 'ou': bets_ou, 'ah': bets_ah}
 
 
 # ═══════════════════════════════════════════════════════════════
+# MODE PRÉDICTION (fixtures à venir, sans résultats)
+# ═══════════════════════════════════════════════════════════════
+
+FIXTURES_URL = 'https://www.football-data.co.uk/fixtures.csv'
+LEAGUES = {'E0', 'E1', 'F1', 'F2', 'D1', 'D2', 'I1', 'I2', 'SP1', 'SP2'}
+
+
+def load_fixtures(path_or_url: str = FIXTURES_URL) -> pd.DataFrame:
+    """Charge les fixtures à venir (mêmes colonnes que les CSV historiques,
+    sans FTR/FTHG/FTAG)."""
+    if path_or_url.startswith('http'):
+        import io
+        import requests
+        r = requests.get(path_or_url, timeout=30)
+        r.raise_for_status()
+        d = pd.read_csv(io.StringIO(r.text))
+    else:
+        for enc in ('utf-8-sig', 'latin-1'):
+            try:
+                d = pd.read_csv(path_or_url, low_memory=False, encoding=enc,
+                                on_bad_lines='skip')
+                if 'Div' in d.columns:
+                    break
+            except UnicodeDecodeError:
+                continue
+    d = d[d['Div'].isin(LEAGUES)].copy()
+    for c in d.columns:
+        if c not in ('Div', 'Date', 'Time', 'HomeTeam', 'AwayTeam', 'FTR'):
+            d[c] = pd.to_numeric(d[c], errors='coerce')
+    return d
+
+
+def detect_upcoming(fx: pd.DataFrame, ev_min: float,
+                    markets: list[str]) -> pd.DataFrame:
+    """Détection pure (pas de settlement) sur des fixtures sans résultats."""
+    rows = []
+    specs = {
+        '1x2': (['PSH', 'PSD', 'PSA'], ['MaxH', 'MaxD', 'MaxA'],
+                ['H', 'D', 'A'], '1X2'),
+        'ou':  (['P<2.5', 'P>2.5'], ['Max<2.5', 'Max>2.5'],
+                ['U', 'O'], 'OU2.5'),
+        'ah':  (['PAHH', 'PAHA'], ['MaxAHH', 'MaxAHA'],
+                ['AH_H', 'AH_A'], 'AH'),
+    }
+    for mk in markets:
+        p_cols, x_cols, sides, label = specs[mk]
+        need = p_cols + x_cols + (['AHh'] if mk == 'ah' else [])
+        d = fx.dropna(subset=[c for c in need if c in fx.columns]).copy()
+        if len(d) == 0 or any(c not in d.columns for c in need):
+            continue
+        fair = novig_power([d[c] for c in p_cols])
+        for j, side in enumerate(sides):
+            ev = fair[:, j] * d[x_cols[j]].values - 1
+            mask = ev > ev_min
+            sel = d[mask]
+            for k, (_, r) in enumerate(sel.iterrows()):
+                rows.append({
+                    'Div': r['Div'], 'Date': r['Date'],
+                    'Time': r.get('Time', ''),
+                    'HomeTeam': r['HomeTeam'], 'AwayTeam': r['AwayTeam'],
+                    'market': label, 'side': side,
+                    'ah_line': r.get('AHh', np.nan) if mk == 'ah' else np.nan,
+                    'odds_bet': r[x_cols[j]],
+                    'fair_p': fair[mask][k, j],
+                    'ev_pre': ev[mask][k],
+                    'detected_at': pd.Timestamp.now().isoformat(timespec='minutes'),
+                })
+    return pd.DataFrame(rows)
+
+
+def append_paper_trades(new: pd.DataFrame, log_path: str) -> int:
+    keys = ['Div', 'Date', 'HomeTeam', 'AwayTeam', 'market', 'side']
+    if os.path.exists(log_path):
+        old = pd.read_csv(log_path)
+        merged = pd.concat([old, new]).drop_duplicates(subset=keys, keep='first')
+        n_added = len(merged) - len(old)
+    else:
+        merged = new.drop_duplicates(subset=keys)
+        n_added = len(merged)
+    merged.to_csv(log_path, index=False)
+    return n_added
+
+
+def evaluate_paper_trades(log_path: str, csv_root: str):
+    """Settle les paper trades avec les résultats de csv/ + CLV closing."""
+    pt = pd.read_csv(log_path)
+    pt['Date'] = pd.to_datetime(pt['Date'], format='mixed', dayfirst=True,
+                                errors='coerce')
+    od = load_odds(csv_root)
+    res_cols = ['Div', 'Date', 'HomeTeam', 'AwayTeam', 'FTR', 'FTHG', 'FTAG',
+                'PSCH', 'PSCD', 'PSCA', 'PC<2.5', 'PC>2.5', 'PCAHH', 'PCAHA']
+    m = pt.merge(od[[c for c in res_cols if c in od.columns]],
+                 on=['Div', 'Date', 'HomeTeam', 'AwayTeam'], how='left')
+    played = m.dropna(subset=['FTR']).copy()
+    print(f'  {len(pt)} paper trades | {len(played)} matchs joués/settleables')
+    if len(played) == 0:
+        return
+
+    profits, clvs = [], []
+    for _, r in played.iterrows():
+        o = r['odds_bet']
+        if r['market'] == '1X2':
+            profits.append(o - 1 if r['FTR'] == r['side'] else -1.0)
+            fc = novig_power([pd.Series([r['PSCH']]), pd.Series([r['PSCD']]),
+                              pd.Series([r['PSCA']])])
+            clvs.append(fc[0, {'H': 0, 'D': 1, 'A': 2}[r['side']]] * o - 1)
+        elif r['market'] == 'OU2.5':
+            under = (r['FTHG'] + r['FTAG']) < 2.5
+            win = under if r['side'] == 'U' else not under
+            profits.append(o - 1 if win else -1.0)
+            fc = novig_power([pd.Series([r['PC<2.5']]), pd.Series([r['PC>2.5']])])
+            clvs.append(fc[0, 0 if r['side'] == 'U' else 1] * o - 1)
+        else:  # AH
+            sign = 1 if r['side'] == 'AH_H' else -1
+            diff = (r['FTHG'] - r['FTAG'] + r['ah_line']) * sign
+            profits.append(float(_settle_ah(np.array([diff]), np.array([o]))[0]))
+            fc = novig_power([pd.Series([r['PCAHH']]), pd.Series([r['PCAHA']])])
+            clvs.append(fc[0, 0 if r['side'] == 'AH_H' else 1] * o - 1)
+
+    p = np.array(profits)
+    clv = np.array(clvs)
+    clv = clv[np.isfinite(clv)]
+    print(f'\n  FORWARD TEST | {len(p)} paris settlés')
+    print(f'  Profit : {p.sum():+.1f}u | ROI : {p.mean() * 100:+.2f}%')
+    if len(clv):
+        print(f'  CLV : {clv.mean() * 100:+.2f}% ({(clv > 0).mean():.0%} > 0)'
+              f'  ← la métrique qui compte')
+
+
+# ═══════════════════════════════════════════════════════════════
 # REPORTING
 # ═══════════════════════════════════════════════════════════════
 
@@ -254,14 +403,40 @@ if __name__ == '__main__':
     ap.add_argument('--markets', default='1x2,ou,ah',
                     help='parmi : 1x2, ou, ah (séparés par des virgules)')
     ap.add_argument('--out', default='value_bets_sharp.csv')
+    ap.add_argument('--predict', nargs='?', const=FIXTURES_URL, default=None,
+                    metavar='FIXTURES', help='mode prédiction : URL ou chemin '
+                    'fixtures.csv (défaut : football-data.co.uk/fixtures.csv)')
+    ap.add_argument('--evaluate', action='store_true',
+                    help='settle les paper trades avec les résultats de csv/')
+    ap.add_argument('--log', default=os.path.join(_HERE, 'paper_trades.csv'))
     a = ap.parse_args()
+
+    mks = [mk.strip() for mk in a.markets.split(',')]
+
+    if a.predict is not None:
+        fx = load_fixtures(a.predict)
+        print(f'  {len(fx)} fixtures chargées')
+        picks = detect_upcoming(fx, a.ev, mks)
+        if len(picks) == 0:
+            print('  Aucun value bet détecté.')
+        else:
+            n = append_paper_trades(picks, a.log)
+            print(f'\n  {len(picks)} value bets détectés | {n} nouveaux → {a.log}')
+            with pd.option_context('display.width', 140):
+                print(picks[['Div', 'Date', 'HomeTeam', 'AwayTeam', 'market',
+                             'side', 'odds_bet', 'ev_pre']].to_string(index=False))
+        raise SystemExit(0)
+
+    if a.evaluate:
+        evaluate_paper_trades(a.log, a.csv)
+        raise SystemExit(0)
 
     od = load_odds(a.csv)
     print(f'  {len(od)} matchs | Pinnacle 1X2 : {od["PSH"].notna().mean():.0%} '
           f'| O/U : {od["P<2.5"].notna().mean():.0%} '
           f'| AH : {od["PAHH"].notna().mean():.0%}')
 
-    parts = [MARKETS[mk.strip()](od, a.ev) for mk in a.markets.split(',')]
+    parts = [MARKETS[mk](od, a.ev) for mk in mks]
     vb = pd.concat(parts).sort_values('Date').reset_index(drop=True)
     report(vb)
 
