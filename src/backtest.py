@@ -241,6 +241,9 @@ def optimize_edge_threshold(df: pd.DataFrame,
                              edge_range=None,
                              odds_col: str = 'Avg>2.5',
                              target_col: str = 'over_25'):
+    """⚠ Exploration uniquement. Retenir le seuil qui maximise le ROI ici
+    = fitter un hyperparamètre sur le test set (cf. AUDIT.md, P3). Tout seuil
+    utilisé en production doit être fixé a priori ou choisi walk-forward."""
     if edge_range is None:
         edge_range = [0.03, 0.05, 0.07, 0.09, 0.10, 0.12, 0.14]
     rows = []

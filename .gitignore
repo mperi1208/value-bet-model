@@ -14,3 +14,7 @@ vb2_*.csv
 backtest_*.png
 draw_*.csv
 draw_*.png
+nohup.out
+data/
+logs/
+.claude/

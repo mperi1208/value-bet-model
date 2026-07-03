@@ -12,6 +12,7 @@ Construit toutes les features pour le modèle under 2.5 :
 import os
 import pandas as pd
 import numpy as np
+from pathlib import Path
 from typing import Optional
 
 ROLLING_WINDOW = 5
@@ -84,6 +85,14 @@ def _compute_team_rolling(df: pd.DataFrame) -> pd.DataFrame:
         .transform(lambda x: x.shift(1).rolling(5, min_periods=2).std().fillna(0))
     )
 
+    # Proxy suspension : rouges sur les N derniers matchs
+    # Rouge = ban 1-3 matchs → red_last1 capture le match précédent, red_last3 la fenêtre
+    for w in [1, 3]:
+        long[f'red_last{w}'] = (
+            long.groupby(grp, group_keys=False)['red']
+            .transform(lambda x: x.shift(1).rolling(w, min_periods=1).sum())
+        )
+
     rename_map = {
         'avg_scored':            'avg_goals_scored',
         'avg_conceded':          'avg_goals_conceded',
@@ -101,6 +110,8 @@ def _compute_team_rolling(df: pd.DataFrame) -> pd.DataFrame:
         'under_rate_5':          'under_rate_5',
         'under_rate_10':         'under_rate_10',
         'goals_var_5':           'goals_var_5',
+        'red_last1':             'red_last1',
+        'red_last3':             'red_last3',
     }
 
     keep = list(rename_map.keys()) + ['orig_idx', 'is_home']
@@ -162,13 +173,14 @@ def _compute_h2h_features(df: pd.DataFrame) -> pd.DataFrame:
         lambda r: '__'.join(sorted([r['HomeTeam'], r['AwayTeam']])), axis=1
     )
 
-    global_rate = df['_under_h2h'].mean()
-
+    # Moyenne cumulée glissante (passé uniquement, pas de leakage)
     df['h2h_under_rate'] = (
         df.groupby('_h2h_key', group_keys=False)['_under_h2h']
         .transform(lambda x: x.shift(1).expanding(min_periods=2).mean())
     )
-    df['h2h_under_rate'] = df['h2h_under_rate'].fillna(global_rate)
+    # Fillna avec la moyenne cumulée globale sur données passées uniquement
+    cumulative_mean = df['_under_h2h'].expanding().mean().shift(1)
+    df['h2h_under_rate'] = df['h2h_under_rate'].fillna(cumulative_mean)
 
     df = df.drop(columns=['_goals_h2h', '_under_h2h', '_h2h_key'], errors='ignore')
     return df
@@ -329,6 +341,21 @@ def _compute_match_importance(df: pd.DataFrame, rivalries: set,
 
 def _compute_novig_probs(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+
+    # Normalise les colonnes BbAv (anciennes saisons FD) vers Avg (nouvelles saisons)
+    # Après concat, les deux colonnes coexistent avec NaN → on remplit les trous
+    for side in ['<', '>']:
+        if f'BbAv{side}2.5' in df.columns:
+            if f'Avg{side}2.5' not in df.columns:
+                df[f'Avg{side}2.5'] = df[f'BbAv{side}2.5']
+            else:
+                df[f'Avg{side}2.5'] = df[f'Avg{side}2.5'].fillna(df[f'BbAv{side}2.5'])
+        if f'BbMx{side}2.5' in df.columns:
+            if f'Max{side}2.5' not in df.columns:
+                df[f'Max{side}2.5'] = df[f'BbMx{side}2.5']
+            else:
+                df[f'Max{side}2.5'] = df[f'Max{side}2.5'].fillna(df[f'BbMx{side}2.5'])
+
     has_over  = 'Avg>2.5' in df.columns
     has_under = 'Avg<2.5' in df.columns
 
@@ -359,11 +386,73 @@ def _compute_novig_probs(df: pd.DataFrame) -> pd.DataFrame:
 
 def build_features(df_raw: pd.DataFrame,
                    rivals_csv: Optional[str] = None,
-                   n_teams: int = 20) -> pd.DataFrame:
+                   n_teams: int = 20,
+                   sofascore_dir: Optional[str] = None) -> pd.DataFrame:
     df = _compute_team_rolling(df_raw)
     df = _compute_h2h_features(df)
     df = _compute_fixture_congestion(df)
     df = _compute_rankings(df)
+
+    # ── Enrichissement Sofascore (optionnel) ──────────────────────────────────
+    if sofascore_dir is not None:
+        import sys as _sys, os as _os
+        _sys.path.insert(0, _os.path.dirname(__file__))
+        league = df_raw["Div"].iloc[0] if "Div" in df_raw.columns else None
+
+        try:
+            from enrich_sofascore import enrich_with_sofascore, compute_sf_rolling
+            # fix : avant, seule la première ligue du df (df["Div"].iloc[0]) était
+            # enrichie — les 9 autres restaient à NaN. On boucle sur toutes.
+            if league:
+                for lg in df["Div"].unique():
+                    print(f"  Enrichissement Sofascore [{lg}] depuis {sofascore_dir}...")
+                    mask_lg = df["Div"] == lg
+                    df_lg = enrich_with_sofascore(df[mask_lg].copy(),
+                                                  sofascore_dir=sofascore_dir, league=lg)
+                    for c in df_lg.columns:
+                        if c not in df.columns:
+                            df[c] = np.nan
+                        df.loc[mask_lg, c] = df_lg[c].values
+                df = compute_sf_rolling(df)
+                sf_cols = [c for c in df.columns if c.startswith("h_sf_") or c.startswith("a_sf_")]
+                cov = df[sf_cols].notna().mean().mean() if sf_cols else 0
+                print(f"  Sofascore : {len(sf_cols)} colonnes rolling | couverture moy. {cov:.1%}")
+        except Exception as e:
+            print(f"  ⚠ Sofascore enrichissement ignoré : {e}")
+
+        # ── Suspensions exactes (incidents TM/Sofascore) — par ligue ─────────
+        try:
+            from enrich_suspensions import enrich_with_suspensions
+            parts = []
+            for lg in df["Div"].unique():
+                df_lg = df[df["Div"] == lg].copy()
+                df_lg = enrich_with_suspensions(df_lg, sofascore_dir=sofascore_dir, league=lg)
+                parts.append(df_lg)
+            df = pd.concat(parts).sort_index()
+        except Exception as e:
+            print(f"  ⚠ Suspensions enrichissement ignoré : {e}")
+            for col in ["h_suspended_n", "a_suspended_n", "h_suspended_names",
+                        "a_suspended_names", "combined_susp_n"]:
+                if col not in df.columns:
+                    df[col] = np.nan
+
+    # ── Blessures Transfermarkt — par ligue ──────────────────────────────────
+    _tm_dir = str(Path(__file__).parent.parent / "data" / "tm")
+    try:
+        from enrich_transfermarkt import enrich_with_injuries
+        inj_parts = []
+        for lg in df["Div"].unique():
+            df_lg = df[df["Div"] == lg].copy()
+            df_lg = enrich_with_injuries(df_lg, tm_dir=_tm_dir, league=lg)
+            inj_parts.append(df_lg)
+        df = pd.concat(inj_parts).sort_index()
+    except Exception as e:
+        print(f"  ⚠ Blessures TM ignorées : {e}")
+        for col in ["h_inj_n", "a_inj_n", "h_inj_value_out",
+                    "a_inj_value_out", "combined_inj_n",
+                    "h_inj_value_ratio", "a_inj_value_ratio"]:
+            if col not in df.columns:
+                df[col] = np.nan
 
     rivalries = _build_rivalries(rivals_csv)
     print(f'   → {len(rivalries)} paires de rivaux chargées')
@@ -387,6 +476,13 @@ def build_features(df_raw: pd.DataFrame,
     df['combined_goals_var']     = (df['h_goals_var_5']   + df['a_goals_var_5'])   / 2
     df['combined_avg_goals']     = (df['h_avg_total_goals'] + df['a_avg_total_goals']) / 2
     df['combined_low_score']     = (df['h_avg_low_score_rate'] + df['a_avg_low_score_rate']) / 2
+
+    # Proxy suspension (rouge = joueur probablement suspendu)
+    df['h_susp_proxy']  = df['h_red_last1']   # rouge dans le match précédent → ban quasi-certain
+    df['a_susp_proxy']  = df['a_red_last1']
+    df['h_susp_proxy3'] = df['h_red_last3']   # fenêtre 3 matchs → accumulation
+    df['a_susp_proxy3'] = df['a_red_last3']
+    df['combined_susp_proxy'] = df['h_susp_proxy'] + df['a_susp_proxy']
 
     # Qualité de tir : ratio SOT/shots (proxy xG sans données externes)
     df['h_shot_acc']        = df['h_avg_sot'] / df['h_avg_shots'].clip(lower=0.5)
