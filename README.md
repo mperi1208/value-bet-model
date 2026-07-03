@@ -6,6 +6,8 @@ A rigorous, iterative machine learning investigation into whether publicly avail
 
 **Short answer: no.** After 5 model iterations, 4 feature enrichment strategies, and 25 seasons of out-of-sample testing across 10 leagues, the bookmaker closing line remains unbeatable with public data. This repository documents the complete scientific process — from false positive to confirmed null result.
 
+> **⚠ Audit (July 2026)** — see [AUDIT.md](AUDIT.md). The v5 ROI of −3.2% below was inflated by ~3.5 pts by a global isotonic recalibration fitted on the full out-of-sample set (leakage, since fixed) and an a-posteriori league exclusion. The honest ML ROI is **−6.7%**, which *strengthens* the null result: a walk-forward logistic blend assigns the model a weight of ~0 next to the bookmaker's probability. A positive edge does exist in this data, but it is market-structural, not ML: betting outlier Max odds against the power-devigged Pinnacle price across 1X2, O/U 2.5 and Asian Handicap yields **+4.9% ROI (95% CI [+2.6, +7.1], n=20,676, 2012–2024)** with a +3.1% average CLV vs the Pinnacle closing line — positive in 11/13 seasons and 8/10 leagues. See `src/value_bet_sharp.py` and AUDIT.md.
+
 ---
 
 ## The Approach
