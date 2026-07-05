@@ -72,6 +72,12 @@ Robustesse du 1X2 (le cœur du signal) : positif 10/13 saisons, 9/10 ligues (seu
 
 Ce qui reste vrai : l'edge vient du line shopping contre des books lents, pas d'une prédiction du football. Les limites opérationnelles (limitation des comptes gagnants, snapshots de cotes, liquidité réelle au moment du pari) s'appliquent intégralement. Le CLV positif à 68% est néanmoins la meilleure garantie disponible que ce n'est pas un artefact de backtest.
 
+## Staking et forward test
+
+Le module intègre le staking Kelly fractionné (`--kelly`, défaut ¼) : mise = min(¼ × EV/(cote−1), 2% bankroll), exposition journalière cappée à 25%, mises d'une même journée calculées sur la bankroll du matin. En simulation sur les 20 676 paris, le quarter-Kelly donne un drawdown max de 22.6% contre >60% en Kelly plein — la fraction ≤ ¼ n'est pas négociable vu le bruit de l'EV estimé. Le multiple de bankroll affiché est du compounding théorique (liquidité infinie, comptes jamais limités) : seuls la hiérarchie et le drawdown sont informatifs.
+
+Le workflow de forward test est opérationnel : `--predict` logge les value bets détectés sur les fixtures à venir dans `paper_trades.csv` (avec `stake_pct` suggéré), `--evaluate` les settle et calcule le CLV réalisé. C'est le juge de paix : trois mois de CLV positif en paper trading (dès la reprise d'août) valent plus que 13 saisons de backtest.
+
 ## Recommandations
 
 Le plafond AUC ~0.56 du XGBoost avec données publiques est un résultat robuste, cohérent avec la littérature — inutile d'y réinvestir. Les prolongements utiles : mesurer le CLV comme métrique primaire de toute stratégie future plutôt que le ROI ; staking Kelly fractionné (l'EV pré-match est déjà calculé par pari dans l'export) ; élargir aux lignes O/U 1.5 et 3.5 et aux handicaps alternatifs si les données deviennent disponibles ; et si un modèle ML doit resservir, l'entraîner à prédire le *mouvement* de la ligne (open → close) plutôt que le résultat du match — c'est le seul y disponible où le marché n'a pas déjà tout dit au moment du pari.

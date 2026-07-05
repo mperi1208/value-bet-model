@@ -369,6 +369,46 @@ def evaluate_paper_trades(log_path: str, csv_root: str):
 
 
 # ═══════════════════════════════════════════════════════════════
+# STAKING KELLY FRACTIONNÉ
+# ═══════════════════════════════════════════════════════════════
+
+def kelly_stake_pct(ev: pd.Series, odds: pd.Series,
+                    frac: float = 0.25, cap: float = 0.02) -> pd.Series:
+    """Mise en % de bankroll : f* = EV/(cote−1), fractionné et cappé.
+    Quart de Kelly par défaut — l'EV estimé est bruité, le Kelly plein
+    sur-mise systématiquement (drawdowns >60% en backtest)."""
+    f = (ev / (odds - 1)).clip(lower=0)
+    return np.minimum(f * frac, cap)
+
+
+def simulate_kelly(vb: pd.DataFrame, frac: float = 0.25, cap: float = 0.02,
+                   daily_cap: float = 0.25, b0: float = 1000.0):
+    """Simulation de bankroll : les mises d'une même journée sont calculées
+    sur la bankroll du matin (paris simultanés), exposition totale du jour
+    cappée à daily_cap. ⚠ Compounding théorique — suppose liquidité infinie
+    et comptes jamais limités ; en réel, les mises plafonnent en absolu."""
+    d = vb.sort_values('Date').copy()
+    d['stake_pct'] = kelly_stake_pct(d['ev_pre'], d['odds_bet'], frac, cap)
+    B, peak, max_dd = b0, b0, 0.0
+    for _, day in d.groupby('Date', sort=True):
+        stakes = day['stake_pct'].values * B
+        tot = stakes.sum()
+        if tot > daily_cap * B:
+            stakes *= daily_cap * B / tot
+        B += (day['profit'].values * stakes).sum()
+        peak = max(peak, B)
+        max_dd = max(max_dd, 1 - B / peak)
+        if B <= 0:
+            break
+    print(f'\n  KELLY {frac:.0%} (cap {cap:.0%}/pari, {daily_cap:.0%}/jour) '
+          f'sur {len(d)} paris :')
+    print(f'    Bankroll finale : ×{B / b0:,.0f} | Drawdown max : {max_dd:.1%}')
+    print(f'    ⚠ compounding théorique (liquidité infinie, comptes jamais '
+          f'limités) — la hiérarchie flat/Kelly et le DD sont informatifs, '
+          f'pas le multiple.')
+
+
+# ═══════════════════════════════════════════════════════════════
 # REPORTING
 # ═══════════════════════════════════════════════════════════════
 
@@ -409,6 +449,9 @@ if __name__ == '__main__':
     ap.add_argument('--evaluate', action='store_true',
                     help='settle les paper trades avec les résultats de csv/')
     ap.add_argument('--log', default=os.path.join(_HERE, 'paper_trades.csv'))
+    ap.add_argument('--kelly', type=float, nargs='?', const=0.25, default=None,
+                    metavar='FRAC', help='simulation bankroll Kelly fractionné '
+                    '(défaut 0.25) + colonne stake_pct dans les exports')
     a = ap.parse_args()
 
     mks = [mk.strip() for mk in a.markets.split(',')]
@@ -420,6 +463,9 @@ if __name__ == '__main__':
         if len(picks) == 0:
             print('  Aucun value bet détecté.')
         else:
+            picks['stake_pct'] = kelly_stake_pct(
+                picks['ev_pre'], picks['odds_bet'],
+                frac=a.kelly if a.kelly else 0.25)
             n = append_paper_trades(picks, a.log)
             print(f'\n  {len(picks)} value bets détectés | {n} nouveaux → {a.log}')
             with pd.option_context('display.width', 140):
@@ -440,8 +486,13 @@ if __name__ == '__main__':
     vb = pd.concat(parts).sort_values('Date').reset_index(drop=True)
     report(vb)
 
+    if a.kelly:
+        vb['stake_pct'] = kelly_stake_pct(vb['ev_pre'], vb['odds_bet'],
+                                          frac=a.kelly)
+        simulate_kelly(vb, frac=a.kelly)
+
     cols = ['Div', 'Date', 'HomeTeam', 'AwayTeam', 'season_year', 'market',
-            'side', 'odds_bet', 'ev_pre', 'clv_ev', 'FTR', 'FTHG', 'FTAG',
-            'profit']
+            'side', 'odds_bet', 'ev_pre', 'stake_pct', 'clv_ev', 'FTR',
+            'FTHG', 'FTAG', 'profit']
     vb[[c for c in cols if c in vb.columns]].to_csv(a.out, index=False)
     print(f'\n  💾 Paris exportés → {a.out}')
