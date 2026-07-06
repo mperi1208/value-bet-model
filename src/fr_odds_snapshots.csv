@@ -89,3 +89,81 @@ E0,2026-08-24T19:00:00Z,Fulham,Chelsea,2026-07-06T19:41,1X2,A,winamax_fr,1.98,0.
 E0,2026-08-24T19:00:00Z,Fulham,Chelsea,2026-07-06T19:41,1X2,H,netbet_fr,2.75,0.3194,2.94,-0.1216
 E0,2026-08-24T19:00:00Z,Fulham,Chelsea,2026-07-06T19:41,1X2,D,netbet_fr,3.35,0.2526,3.67,-0.1538
 E0,2026-08-24T19:00:00Z,Fulham,Chelsea,2026-07-06T19:41,1X2,A,netbet_fr,2.05,0.428,2.23,-0.1227
+TENNIS,2026-07-06T18:06:00Z,Jiri Lehecka,Alexander Zverev,2026-07-06T19:55,h2h,H,unibet_fr,3.55,0.2689,3.52,-0.0454
+TENNIS,2026-07-06T18:06:00Z,Jiri Lehecka,Alexander Zverev,2026-07-06T19:55,h2h,A,unibet_fr,1.32,0.7311,1.35,-0.035
+TENNIS,2026-07-06T18:06:00Z,Jiri Lehecka,Alexander Zverev,2026-07-06T19:55,h2h,H,betclic_fr,3.5,0.2689,3.52,-0.0588
+TENNIS,2026-07-06T18:06:00Z,Jiri Lehecka,Alexander Zverev,2026-07-06T19:55,h2h,A,betclic_fr,1.32,0.7311,1.35,-0.035
+TENNIS,2026-07-06T18:06:00Z,Jiri Lehecka,Alexander Zverev,2026-07-06T19:55,h2h,H,winamax_fr,3.4,0.2689,3.52,-0.0857
+TENNIS,2026-07-06T18:06:00Z,Jiri Lehecka,Alexander Zverev,2026-07-06T19:55,h2h,A,winamax_fr,1.32,0.7311,1.35,-0.035
+TENNIS,2026-07-06T18:06:00Z,Jiri Lehecka,Alexander Zverev,2026-07-06T19:55,h2h,H,pmu_fr,3.3,0.2689,3.52,-0.1126
+TENNIS,2026-07-06T18:06:00Z,Jiri Lehecka,Alexander Zverev,2026-07-06T19:55,h2h,A,pmu_fr,1.32,0.7311,1.35,-0.035
+TENNIS,2026-07-06T18:06:00Z,Jiri Lehecka,Alexander Zverev,2026-07-06T19:55,h2h,H,netbet_fr,3.45,0.2689,3.52,-0.0723
+TENNIS,2026-07-06T18:06:00Z,Jiri Lehecka,Alexander Zverev,2026-07-06T19:55,h2h,A,netbet_fr,1.29,0.7311,1.35,-0.0569
+TENNIS,2026-07-07T12:00:00Z,Jannik Sinner,Jan-Lennard Struff,2026-07-06T19:55,h2h,H,betclic_fr,1.03,0.9562,1.04,-0.0151
+TENNIS,2026-07-07T12:00:00Z,Jannik Sinner,Jan-Lennard Struff,2026-07-06T19:55,h2h,A,betclic_fr,11.0,0.0438,15.51,-0.5185
+TENNIS,2026-07-07T12:00:00Z,Jannik Sinner,Jan-Lennard Struff,2026-07-06T19:55,h2h,H,unibet_fr,1.03,0.9562,1.04,-0.0151
+TENNIS,2026-07-07T12:00:00Z,Jannik Sinner,Jan-Lennard Struff,2026-07-06T19:55,h2h,A,unibet_fr,11.0,0.0438,15.51,-0.5185
+TENNIS,2026-07-07T12:00:00Z,Jannik Sinner,Jan-Lennard Struff,2026-07-06T19:55,h2h,H,winamax_fr,1.03,0.9562,1.04,-0.0151
+TENNIS,2026-07-07T12:00:00Z,Jannik Sinner,Jan-Lennard Struff,2026-07-06T19:55,h2h,A,winamax_fr,12.0,0.0438,15.51,-0.4747
+TENNIS,2026-07-07T12:00:00Z,Jannik Sinner,Jan-Lennard Struff,2026-07-06T19:55,h2h,H,netbet_fr,1.01,0.9562,1.04,-0.0342
+TENNIS,2026-07-07T12:00:00Z,Jannik Sinner,Jan-Lennard Struff,2026-07-06T19:55,h2h,A,netbet_fr,13.0,0.0438,15.51,-0.4309
+TENNIS,2026-07-07T12:00:00Z,Jannik Sinner,Jan-Lennard Struff,2026-07-06T19:55,h2h,H,pmu_fr,1.02,0.9562,1.04,-0.0246
+TENNIS,2026-07-07T12:00:00Z,Jannik Sinner,Jan-Lennard Struff,2026-07-06T19:55,h2h,A,pmu_fr,12.0,0.0438,15.51,-0.4747
+TENNIS,2026-07-07T14:30:00Z,Felix Auger-Aliassime,Novak Djokovic,2026-07-06T19:55,h2h,H,betclic_fr,2.4,0.3825,2.52,-0.0819
+TENNIS,2026-07-07T14:30:00Z,Felix Auger-Aliassime,Novak Djokovic,2026-07-06T19:55,h2h,A,betclic_fr,1.56,0.6175,1.59,-0.0368
+TENNIS,2026-07-07T14:30:00Z,Felix Auger-Aliassime,Novak Djokovic,2026-07-06T19:55,h2h,H,unibet_fr,2.4,0.3825,2.52,-0.0819
+TENNIS,2026-07-07T14:30:00Z,Felix Auger-Aliassime,Novak Djokovic,2026-07-06T19:55,h2h,A,unibet_fr,1.56,0.6175,1.59,-0.0368
+TENNIS,2026-07-07T14:30:00Z,Felix Auger-Aliassime,Novak Djokovic,2026-07-06T19:55,h2h,H,winamax_fr,2.4,0.3825,2.52,-0.0819
+TENNIS,2026-07-07T14:30:00Z,Felix Auger-Aliassime,Novak Djokovic,2026-07-06T19:55,h2h,A,winamax_fr,1.56,0.6175,1.59,-0.0368
+TENNIS,2026-07-07T14:30:00Z,Felix Auger-Aliassime,Novak Djokovic,2026-07-06T19:55,h2h,H,netbet_fr,2.4,0.3825,2.52,-0.0819
+TENNIS,2026-07-07T14:30:00Z,Felix Auger-Aliassime,Novak Djokovic,2026-07-06T19:55,h2h,A,netbet_fr,1.55,0.6175,1.59,-0.0429
+TENNIS,2026-07-07T14:30:00Z,Felix Auger-Aliassime,Novak Djokovic,2026-07-06T19:55,h2h,H,pmu_fr,2.48,0.3825,2.52,-0.0513
+TENNIS,2026-07-07T14:30:00Z,Felix Auger-Aliassime,Novak Djokovic,2026-07-06T19:55,h2h,A,pmu_fr,1.54,0.6175,1.59,-0.0491
+MLB,2026-07-06T18:11:00Z,Kansas City Royals,Philadelphia Phillies,2026-07-06T19:55,h2h,H,unibet_fr,2.9,0.3377,2.86,-0.0207
+MLB,2026-07-06T18:11:00Z,Kansas City Royals,Philadelphia Phillies,2026-07-06T19:55,h2h,A,unibet_fr,1.42,0.6623,1.49,-0.0595
+MLB,2026-07-06T18:11:00Z,Kansas City Royals,Philadelphia Phillies,2026-07-06T19:55,h2h,H,betclic_fr,2.75,0.3377,2.86,-0.0714
+MLB,2026-07-06T18:11:00Z,Kansas City Royals,Philadelphia Phillies,2026-07-06T19:55,h2h,A,betclic_fr,1.39,0.6623,1.49,-0.0794
+MLB,2026-07-06T18:11:00Z,Kansas City Royals,Philadelphia Phillies,2026-07-06T19:55,h2h,H,winamax_fr,2.8,0.3377,2.86,-0.0545
+MLB,2026-07-06T18:11:00Z,Kansas City Royals,Philadelphia Phillies,2026-07-06T19:55,h2h,A,winamax_fr,1.41,0.6623,1.49,-0.0661
+MLB,2026-07-06T22:41:00Z,Tampa Bay Rays,New York Yankees,2026-07-06T19:55,h2h,H,unibet_fr,1.87,0.5053,1.94,-0.0552
+MLB,2026-07-06T22:41:00Z,Tampa Bay Rays,New York Yankees,2026-07-06T19:55,h2h,A,unibet_fr,1.9,0.4947,1.98,-0.06
+MLB,2026-07-06T22:41:00Z,Tampa Bay Rays,New York Yankees,2026-07-06T19:55,h2h,H,betclic_fr,1.87,0.5053,1.94,-0.0552
+MLB,2026-07-06T22:41:00Z,Tampa Bay Rays,New York Yankees,2026-07-06T19:55,h2h,A,betclic_fr,1.9,0.4947,1.98,-0.06
+MLB,2026-07-06T22:41:00Z,Tampa Bay Rays,New York Yankees,2026-07-06T19:55,h2h,H,winamax_fr,1.86,0.5053,1.94,-0.0602
+MLB,2026-07-06T22:41:00Z,Tampa Bay Rays,New York Yankees,2026-07-06T19:55,h2h,A,winamax_fr,1.9,0.4947,1.98,-0.06
+MLB,2026-07-06T22:46:00Z,Washington Nationals,Houston Astros,2026-07-06T19:55,h2h,H,betclic_fr,1.81,0.5223,1.88,-0.0547
+MLB,2026-07-06T22:46:00Z,Washington Nationals,Houston Astros,2026-07-06T19:55,h2h,A,betclic_fr,1.97,0.4777,2.05,-0.0588
+MLB,2026-07-06T22:46:00Z,Washington Nationals,Houston Astros,2026-07-06T19:55,h2h,H,unibet_fr,1.81,0.5223,1.88,-0.0547
+MLB,2026-07-06T22:46:00Z,Washington Nationals,Houston Astros,2026-07-06T19:55,h2h,A,unibet_fr,1.97,0.4777,2.05,-0.0588
+MLB,2026-07-06T22:46:00Z,Washington Nationals,Houston Astros,2026-07-06T19:55,h2h,H,winamax_fr,1.8,0.5223,1.88,-0.0599
+MLB,2026-07-06T22:46:00Z,Washington Nationals,Houston Astros,2026-07-06T19:55,h2h,A,winamax_fr,1.96,0.4777,2.05,-0.0636
+MLB,2026-07-06T23:16:00Z,Atlanta Braves,New York Mets,2026-07-06T19:55,h2h,H,unibet_fr,1.75,0.543,1.81,-0.0498
+MLB,2026-07-06T23:16:00Z,Atlanta Braves,New York Mets,2026-07-06T19:55,h2h,A,unibet_fr,2.05,0.457,2.14,-0.0631
+MLB,2026-07-06T23:16:00Z,Atlanta Braves,New York Mets,2026-07-06T19:55,h2h,H,betclic_fr,1.75,0.543,1.81,-0.0498
+MLB,2026-07-06T23:16:00Z,Atlanta Braves,New York Mets,2026-07-06T19:55,h2h,A,betclic_fr,2.05,0.457,2.14,-0.0631
+MLB,2026-07-06T23:16:00Z,Atlanta Braves,New York Mets,2026-07-06T19:55,h2h,H,winamax_fr,1.74,0.543,1.81,-0.0552
+MLB,2026-07-06T23:16:00Z,Atlanta Braves,New York Mets,2026-07-06T19:55,h2h,A,winamax_fr,2.05,0.457,2.14,-0.0631
+MLB,2026-07-06T23:46:00Z,St. Louis Cardinals,Milwaukee Brewers,2026-07-06T19:55,h2h,H,betclic_fr,1.88,0.5053,1.94,-0.0501
+MLB,2026-07-06T23:46:00Z,St. Louis Cardinals,Milwaukee Brewers,2026-07-06T19:55,h2h,A,betclic_fr,1.89,0.4947,1.98,-0.0649
+MLB,2026-07-06T23:46:00Z,St. Louis Cardinals,Milwaukee Brewers,2026-07-06T19:55,h2h,H,unibet_fr,1.88,0.5053,1.94,-0.0501
+MLB,2026-07-06T23:46:00Z,St. Louis Cardinals,Milwaukee Brewers,2026-07-06T19:55,h2h,A,unibet_fr,1.89,0.4947,1.98,-0.0649
+MLB,2026-07-06T23:46:00Z,St. Louis Cardinals,Milwaukee Brewers,2026-07-06T19:55,h2h,H,winamax_fr,1.88,0.5053,1.94,-0.0501
+MLB,2026-07-06T23:46:00Z,St. Louis Cardinals,Milwaukee Brewers,2026-07-06T19:55,h2h,A,winamax_fr,1.88,0.4947,1.98,-0.0699
+MLB,2026-07-07T01:41:00Z,San Diego Padres,Arizona Diamondbacks,2026-07-06T19:55,h2h,H,unibet_fr,1.77,0.5313,1.85,-0.0596
+MLB,2026-07-07T01:41:00Z,San Diego Padres,Arizona Diamondbacks,2026-07-06T19:55,h2h,A,unibet_fr,1.99,0.4687,2.09,-0.0673
+MLB,2026-07-07T01:41:00Z,San Diego Padres,Arizona Diamondbacks,2026-07-06T19:55,h2h,H,betclic_fr,1.78,0.5313,1.85,-0.0543
+MLB,2026-07-07T01:41:00Z,San Diego Padres,Arizona Diamondbacks,2026-07-06T19:55,h2h,A,betclic_fr,2.01,0.4687,2.09,-0.0579
+MLB,2026-07-07T01:41:00Z,San Diego Padres,Arizona Diamondbacks,2026-07-06T19:55,h2h,H,winamax_fr,1.78,0.5313,1.85,-0.0543
+MLB,2026-07-07T01:41:00Z,San Diego Padres,Arizona Diamondbacks,2026-07-06T19:55,h2h,A,winamax_fr,2.0,0.4687,2.09,-0.0626
+MLB,2026-07-07T01:46:00Z,San Francisco Giants,Toronto Blue Jays,2026-07-06T19:55,h2h,H,unibet_fr,1.89,0.5026,1.95,-0.05
+MLB,2026-07-07T01:46:00Z,San Francisco Giants,Toronto Blue Jays,2026-07-06T19:55,h2h,A,unibet_fr,1.85,0.4974,1.97,-0.0799
+MLB,2026-07-07T01:46:00Z,San Francisco Giants,Toronto Blue Jays,2026-07-06T19:55,h2h,H,betclic_fr,1.91,0.5026,1.95,-0.04
+MLB,2026-07-07T01:46:00Z,San Francisco Giants,Toronto Blue Jays,2026-07-06T19:55,h2h,A,betclic_fr,1.87,0.4974,1.97,-0.0699
+MLB,2026-07-07T01:46:00Z,San Francisco Giants,Toronto Blue Jays,2026-07-06T19:55,h2h,H,winamax_fr,1.9,0.5026,1.95,-0.045
+MLB,2026-07-07T01:46:00Z,San Francisco Giants,Toronto Blue Jays,2026-07-06T19:55,h2h,A,winamax_fr,1.86,0.4974,1.97,-0.0749
+MLB,2026-07-08T02:11:00Z,Los Angeles Dodgers,Colorado Rockies,2026-07-06T19:55,h2h,H,unibet_fr,1.41,0.681,1.45,-0.0397
+MLB,2026-07-08T02:11:00Z,Los Angeles Dodgers,Colorado Rockies,2026-07-06T19:55,h2h,A,unibet_fr,2.75,0.319,3.02,-0.1228
+MLB,2026-07-08T02:11:00Z,Los Angeles Dodgers,Colorado Rockies,2026-07-06T19:55,h2h,H,betclic_fr,1.42,0.681,1.45,-0.0329
+MLB,2026-07-08T02:11:00Z,Los Angeles Dodgers,Colorado Rockies,2026-07-06T19:55,h2h,A,betclic_fr,2.8,0.319,3.02,-0.1069
+MLB,2026-07-08T02:11:00Z,Los Angeles Dodgers,Colorado Rockies,2026-07-06T19:55,h2h,H,winamax_fr,1.41,0.681,1.45,-0.0397
+MLB,2026-07-08T02:11:00Z,Los Angeles Dodgers,Colorado Rockies,2026-07-06T19:55,h2h,A,winamax_fr,2.8,0.319,3.02,-0.1069

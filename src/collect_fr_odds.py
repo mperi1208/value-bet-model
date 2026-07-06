@@ -86,7 +86,14 @@ def fetch_league(div: str, key: str, api_key: str) -> list[dict]:
     remaining = r.headers.get('x-requests-remaining')
     print(f'  {div}: {len(r.json())} matchs (crédits restants: {remaining})')
     rows = []
+    now_utc = pd.Timestamp.now(tz='UTC')
     for ev in r.json():
+        # ⚠ filtre in-play : un match déjà commencé mélange cotes live
+        # (Pinnacle) et cotes pré-match figées (books FR) → faux EV énormes.
+        # Vu en réel : PMU affichait Bublik 5.1 vs Pinnacle live 4.1 alors
+        # que le match était en cours — EV illusoire de +15%.
+        if pd.Timestamp(ev['commence_time']) <= now_utc:
+            continue
         books = {b['key']: b for b in ev.get('bookmakers', [])}
         if ANCHOR not in books:
             continue
