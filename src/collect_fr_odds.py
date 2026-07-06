@@ -32,6 +32,7 @@ import requests
 
 API = 'https://api.the-odds-api.com/v4'
 
+# Ligues foot du backtest (clé -> code Div historique)
 SPORT_KEYS = {
     'E0': 'soccer_epl',
     'E1': 'soccer_efl_champ',
@@ -44,6 +45,11 @@ SPORT_KEYS = {
     'SP1': 'soccer_spain_la_liga',
     'SP2': 'soccer_spain_segunda_division',
 }
+# Mode --all-sports : tout sport actif de ces groupes est collecté
+# (le mécanisme sharp anchor est agnostique au sport — l'edge par sport
+#  doit néanmoins être MESURÉE avant d'être pariée, cf. AUDIT.md)
+ALL_SPORT_GROUPS = {'Soccer', 'Basketball', 'American Football', 'Baseball',
+                    'Tennis', 'Ice Hockey', 'Mixed Martial Arts', 'Rugby League'}
 FR_BOOKS = {'betclic_fr', 'winamax_fr', 'unibet_fr', 'pmu_fr', 'netbet_fr'}
 ANCHOR = 'pinnacle'
 
@@ -58,6 +64,15 @@ def novig_power(odds: list[float]) -> list[float]:
         return list(inv ** k)
     except Exception:
         return list(inv / inv.sum())
+
+
+def list_active_sports(api_key: str) -> dict:
+    """Sports actifs des groupes couverts (coût : 0 crédit)."""
+    r = requests.get(f'{API}/sports', params={'apiKey': api_key}, timeout=30)
+    r.raise_for_status()
+    return {s['key']: s['title'] for s in r.json()
+            if s['group'] in ALL_SPORT_GROUPS
+            and s['active'] and not s['has_outrights']}
 
 
 def fetch_league(div: str, key: str, api_key: str) -> list[dict]:
@@ -79,39 +94,47 @@ def fetch_league(div: str, key: str, api_key: str) -> list[dict]:
                 'HomeTeam': ev['home_team'], 'AwayTeam': ev['away_team'],
                 'collected_at': pd.Timestamp.now().isoformat(timespec='minutes')}
 
-        # ── 1X2 ────────────────────────────────────────────────────
+        # ── h2h : générique 2 issues (tennis, MMA...) ou 3 (foot...) ─
+        # Les noms d'issues sont pris chez Pinnacle, pas hardcodés.
         anchor_h2h = _market(books[ANCHOR], 'h2h')
         if anchor_h2h:
-            names = [ev['home_team'], 'Draw', ev['away_team']]
-            p_odds = [_price(anchor_h2h, n) for n in names]
-            if all(p_odds):
+            names = [o['name'] for o in anchor_h2h]
+            p_odds = [o['price'] for o in anchor_h2h]
+            if all(p_odds) and len(p_odds) in (2, 3):
                 fair = novig_power(p_odds)
-                for i, (name, side) in enumerate(zip(names, ['H', 'D', 'A'])):
+                for i, name in enumerate(names):
+                    side = ('D' if name == 'Draw' else
+                            'H' if name == ev['home_team'] else 'A')
                     best_o, best_b = _best_fr(books, 'h2h', name)
                     if best_o is None:
                         continue
                     rows.append(base | {
-                        'market': '1X2', 'side': side, 'book': best_b,
+                        'market': 'h2h', 'side': side, 'book': best_b,
                         'odds_bet': best_o, 'fair_p': fair[i],
                         'pinnacle_odds': p_odds[i],
                         'ev_pre': fair[i] * best_o - 1,
                     })
 
-        # ── O/U 2.5 ────────────────────────────────────────────────
-        anchor_tot = _market(books[ANCHOR], 'totals', point=2.5)
+        # ── totals : ligne principale de Pinnacle (2.5 au foot,
+        #    variable en NBA/NFL/MLB...) — on matche le même point FR ─
+        anchor_tot = _market(books[ANCHOR], 'totals')
         if anchor_tot:
-            p_odds = [_price(anchor_tot, 'Under'), _price(anchor_tot, 'Over')]
-            if all(p_odds):
-                fair = novig_power(p_odds)
-                for i, name_side in enumerate([('Under', 'U'), ('Over', 'O')]):
-                    name, side = name_side
-                    best_o, best_b = _best_fr(books, 'totals', name, point=2.5)
+            points = sorted({o.get('point') for o in anchor_tot
+                             if o.get('point') is not None})
+            main_pt = points[len(points) // 2] if points else None
+            outs = [o for o in anchor_tot if o.get('point') == main_pt]
+            p_under = _price(outs, 'Under')
+            p_over = _price(outs, 'Over')
+            if main_pt is not None and p_under and p_over:
+                fair = novig_power([p_under, p_over])
+                for i, (name, side) in enumerate([('Under', 'U'), ('Over', 'O')]):
+                    best_o, best_b = _best_fr(books, 'totals', name, point=main_pt)
                     if best_o is None:
                         continue
                     rows.append(base | {
-                        'market': 'OU2.5', 'side': side, 'book': best_b,
+                        'market': f'OU{main_pt}', 'side': side, 'book': best_b,
                         'odds_bet': best_o, 'fair_p': fair[i],
-                        'pinnacle_odds': p_odds[i],
+                        'pinnacle_odds': p_under if side == 'U' else p_over,
                         'ev_pre': fair[i] * best_o - 1,
                     })
     return rows
@@ -157,14 +180,26 @@ if __name__ == '__main__':
         os.path.dirname(os.path.abspath(__file__)), 'paper_trades_fr.csv'))
     ap.add_argument('--all-log', default=os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'fr_odds_snapshots.csv'))
+    ap.add_argument('--all-sports', action='store_true',
+                    help='collecte TOUS les sports actifs (basket, tennis, '
+                    'NFL, MLB...) au lieu des 10 ligues foot. '
+                    '~4 crédits/sport/passage — surveille ton budget.')
     a = ap.parse_args()
 
     api_key = os.environ.get('ODDS_API_KEY')
     if not api_key:
         raise SystemExit('export ODDS_API_KEY=... (clé gratuite sur the-odds-api.com)')
 
+    if a.all_sports:
+        targets = list_active_sports(api_key)
+        print(f'  {len(targets)} sports actifs : {", ".join(sorted(targets))}')
+    else:
+        targets = {k: k for k in SPORT_KEYS.values()}
+
+    div_of = {v: d for d, v in SPORT_KEYS.items()}
     all_rows = []
-    for div, key in SPORT_KEYS.items():
+    for key in targets:
+        div = div_of.get(key, key)   # code Div historique si ligue du backtest
         try:
             all_rows += fetch_league(div, key, api_key)
         except Exception as e:
