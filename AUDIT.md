@@ -86,6 +86,20 @@ La k-fold classique est inapplicable ici (données temporelles ; et la stratégi
 
 Question testée : l'edge survit-il si on exécute sur l'exchange (seule voie d'automatisation légitime, API officielle) au lieu des soft books ? Données : saison 2024-25 uniquement (seule à avoir les colonnes BFE), 3 758 matchs, 1X2, EV > 0.02. Résultat : non. Sur le même périmètre, les paris @Max soft books gardent un CLV de +2.50% (69% > 0) ; les paris @BFE à commission nulle affichent un CLV de +1.02% avec seulement **51% des paris battant la close — un coin flip**, et à commission réaliste (2-5%) le volume s'effondre et le ROI devient négatif. Les cotes BFE sont pourtant équivalentes aux Max en niveau (ratio médian ~1.00) : la différence est que l'exchange bouge *avec* Pinnacle — quand une cote y dépasse le fair price, c'est de l'information, pas de la lenteur. L'edge de la stratégie est précisément la lenteur des soft books ; elle ne se transporte pas sur un marché rapide. Conclusion opérationnelle : l'automatisation s'arrête à la détection/notification/suivi ; l'exécution reste manuelle, chez les soft books.
 
+## Projection long terme sur les bookmakers français
+
+Les cotes historiques des opérateurs ANJ n'existant dans aucune archive, la « décennie française » ne peut être que simulée : on rejoue les 13 saisons du backtest en appliquant une décote uniforme h aux cotes Max (sélection ET settlement aux cotes dégradées, seuil EV 0.02, quarter-Kelly sur bankroll fixe de 10 k€, profits retirés) :
+
+| Décote vs Max | n paris | ROI/pari | Profit/an (Kelly 10k€) | DD max |
+|---|---|---|---|---|
+| 0 % (backtest intl) | 20 676 | +4.9 % | **5 940 €/an** | 2 834 € |
+| 2 % | 6 454 | +7.9 % | 2 154 €/an | 3 133 € |
+| 4 % | 2 335 | +8.9 % | 723 €/an | 1 595 € |
+| 6 % | 995 | +5.3 % | 245 €/an | 960 € |
+| 8 % | 513 | +4.6 % | 26 €/an | 1 139 € |
+
+Le ROI par pari survit à la décote (la sélection se reconcentre sur les aberrations extrêmes) mais le volume s'effondre — c'est lui qui porte le profit. Conversion mesurée : Max historique = 1.019 × Pinnacle ; le snapshot du 6 juillet 2026 (EPL J1, collecté à J-46) place les meilleures cotes FR à 0.938 × Pinnacle, soit **~7.9 % de décote → profit quasi nul**. Mais à J-46 les marges sont maximales (Winamax 18.8 %, Unibet 14 % vs ~8 % attendus en semaine de match) ; si la compression habituelle ramène les FR à 0.97-0.98 × Pinnacle au vendredi, la décote vs Max tombe à ~4-5 % → **ordre de grandeur 400-1 200 €/an sur 10 k€**, cinq à dix fois moins que le panel international. Réserve méthodologique : la décote uniforme préserve la dispersion historique des cotes Max ; si les books FR sont chers *et* synchrones (peu probable mais possible — le marché n'a que 5 acteurs), même ce résidu disparaît. Les snapshots hebdomadaires de `collect_fr_odds.py` mesureront la vraie décote de semaine de match et trancheront — c'est la seule donnée manquante, et elle n'est constructible qu'en avançant.
+
 ## Recommandations
 
 Le plafond AUC ~0.56 du XGBoost avec données publiques est un résultat robuste, cohérent avec la littérature — inutile d'y réinvestir. Les prolongements utiles : mesurer le CLV comme métrique primaire de toute stratégie future plutôt que le ROI ; staking Kelly fractionné (l'EV pré-match est déjà calculé par pari dans l'export) ; élargir aux lignes O/U 1.5 et 3.5 et aux handicaps alternatifs si les données deviennent disponibles ; et si un modèle ML doit resservir, l'entraîner à prédire le *mouvement* de la ligne (open → close) plutôt que le résultat du match — c'est le seul y disponible où le marché n'a pas déjà tout dit au moment du pari.
