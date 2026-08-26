@@ -92,6 +92,54 @@ Switching to **Platt calibration** (logistic sigmoid, only 2 parameters) elimina
 
 ---
 
+# The Edge That Does Exist — And It Isn't Machine Learning
+
+The ML search failed, but the same dataset contains a profitable strategy that predicts nothing about football. **Anchor on the sharp price, bet the slow book**: take Pinnacle's odds as the market's best estimate, remove its margin with a *power* devig, and bet whenever some bookmaker in the panel prices an outcome above that fair value by more than 2%.
+
+Across 1X2, Over/Under 2.5 and Asian Handicap, 2012–2024: **+4.86% ROI on 20 676 bets** (bootstrap 95% CI [+2.5, +7.2]), with **+3.05% CLV**. Implementation in [`src/value_bet_sharp.py`](src/value_bet_sharp.py).
+
+### The bets behave exactly as a real edge should
+
+![EV gradient](docs/07_sharp_ev_gradient.png)
+
+This is the strategy's own placebo test. Every Max-odds bet in the dataset, bucketed by the edge estimated *before* the match. Bets the model says are bad lose 7.3%; bets it says are good win 10.9%; the ordering never breaks. A backtest artefact would not produce a monotone gradient through zero — and note that betting Max odds indiscriminately loses 1.2%, so the premium of the best price alone explains none of this.
+
+### No single league carries the result
+
+![League breakdown](docs/08_sharp_leagues.png)
+
+Nine of ten leagues are positive. Individual league CIs are wide — none of them is independently conclusive — but the result does not depend on any one of them: leave any league out and the rest still returns between +4.4% and +5.4%.
+
+### Closing line value is the real evidence
+
+![CLV by season](docs/09_sharp_clv.png)
+
+ROI is noisy; CLV is not. In all 13 seasons the selected bets were priced better than Pinnacle's own closing line, and roughly two thirds of individual bets beat the close. This is the standard proof that a selection captures genuine mispricing rather than variance — a coin flip sits at 50%.
+
+### Equity curve
+
+![Equity curve](docs/10_sharp_equity.png)
+
+Flat 1-unit stakes, no compounding: +1 004 units over thirteen seasons, worst drawdown 98 units. The slope visibly flattens after 2022 — see below.
+
+### The edge is line shopping, not stock picking
+
+![Per-book comparison](docs/11_sharp_books.png)
+
+A counter-intuitive result worth stating plainly: the *best per-bet* returns come from Interwetten alone (+7.7%), not from the panel maximum (+4.8%). But per-bet edge is not where the money is — the panel finds 5.5× more opportunities and generates **854 units against 248**. One book also happens to be reliably *un*profitable to bet into (BetVictor, −6.4%). The edge lives in having somewhere to shop, not in one clever bookmaker.
+
+### The window is closing
+
+![Decay](docs/12_sharp_decay.png)
+
+Restricted to 1X2, the only market covered across all thirteen seasons: qualifying mispricings have **halved**, from ~1 810 per season in 2012–2014 to ~845 in 2022–2024. ROI over 2022–2024 is +1.75% with a 95% CI of [−4.4, +8.1] — too wide to claim the edge has died, but no longer enough to claim it is intact either. CLV over the same span holds at +2.96% with 71% of bets beating the close, which suggests the selection still works and the opportunities are simply rarer.
+
+### What this does and does not mean
+
+The edge comes from soft bookmakers updating their prices more slowly than the sharp market, and it does not survive contact with a fast one: executed on Betfair Exchange, only 51% of bets beat the close — a coin flip — and realistic commission turns the return negative. The binding constraint is operational rather than statistical: soft books limit winning accounts within weeks, historical odds are snapshots rather than executable prices, and capturing the panel maximum assumes accounts almost everywhere. Full detail and every robustness test in [AUDIT.md](AUDIT.md).
+
+---
+
 ## Methodology
 
 ### Walk-Forward Validation
@@ -146,10 +194,12 @@ value-bet-model/
 │   ├── backtest.py             # ROI simulation, significance tests, edge optimisation
 │   ├── main.py                 # Under 2.5 pipeline (E1 + F2)
 │   ├── draw_pipeline.py        # Draw pipeline (Div1)
+│   ├── value_bet_sharp.py      # Sharp-anchor strategy (1X2 + O/U + AH), Kelly staking, paper trading
 │   └── scrape_understat.py     # Selenium-based xG scraper
 ├── docs/
-│   ├── generate_plots.py       # Regenerate all diagnostic plots
-│   └── *.png                   # AUC, ROI, calibration, edge, feature importance, league breakdown
+│   ├── generate_plots.py       # Regenerate the ML diagnostic plots (01–06)
+│   ├── generate_sharp_plots.py # Regenerate the sharp-strategy plots (07–12)
+│   └── *.png                   # AUC, ROI, calibration, EV gradient, CLV, equity, per-book, decay
 ├── LICENSE
 ├── requirements.txt
 └── README.md
@@ -176,6 +226,14 @@ python src/draw_pipeline.py --data-dir ./src/csv --edge 0.05
 
 # Update current season only
 python src/main.py --download --update
+
+# Run the sharp-anchor strategy (the profitable one)
+python src/value_bet_sharp.py --ev 0.02 --kelly
+
+# Regenerate the strategy plots (07–12)
+python src/value_bet_sharp.py --ev 0.02 --kelly --out src/value_bets_sharp.csv
+python src/value_bet_sharp.py --ev -0.10 --out /tmp/all_ev.csv
+python docs/generate_sharp_plots.py --all-ev /tmp/all_ev.csv
 ```
 
 ---
