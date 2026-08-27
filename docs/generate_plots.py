@@ -45,13 +45,15 @@ print("01_auc.png")
 
 # 2. ROI
 fig, ax = plt.subplots(figsize=(11, 5))
-roi = [-7.91, -8.68, -6.56, -4.49, -3.2]
+# v5 corrected by the July 2026 audit: the -3.2% previously shown here was
+# inflated ~3.5 pts by a leaking global isotonic recalibration + an a-posteriori
+# league exclusion. See AUDIT.md.
+roi = [-7.91, -8.68, -6.56, -4.49, -6.7]
 ax.bar(range(5), roi, color=RED, edgecolor="#30363D", width=0.55, alpha=0.9)
 ax.axhline(0, color=GREEN, ls="-", lw=1.5, alpha=0.5)
 for i, v in enumerate(roi):
     ax.text(i, v - 0.4, f"{v:+.1f}%", ha="center", fontsize=13, fontweight="bold", color=RED)
-ax.annotate("", xy=(4, -3.2), xytext=(0, -7.91), arrowprops=dict(arrowstyle="->", color=YELLOW, lw=2, ls="--"))
-ax.text(2.0, -2.2, "Improving but never profitable", fontsize=10, color=YELLOW, ha="center", style="italic", alpha=0.8)
+ax.text(2.0, -1.6, "No trend toward profitability", fontsize=10, color=YELLOW, ha="center", style="italic", alpha=0.85)
 ax.set_xticks(range(5)); ax.set_xticklabels(versions, fontsize=10)
 ax.set_ylabel("ROI % (flat stake)")
 ax.set_title("Return on Investment — All Versions Negative", fontsize=14, fontweight="bold", color="#F0F6FC", pad=15)
