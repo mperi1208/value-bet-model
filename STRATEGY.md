@@ -10,10 +10,10 @@ some bookmaker in the panel prices an outcome more than 2% above that fair value
 
 | Market | Period | n | ROI | 95% CI | CLV |
 |---|---|---|---|---|---|
-| 1X2 | 2012–2024 | 17 890 | +4.8% | [+2.2, +7.4] | +3.2% |
-| O/U 2.5 | 2019–2024 | 1 311 | +5.9% | — | +4.2% |
-| Asian Handicap | 2019–2024 | 1 475 | +5.0% | — | +1.6% |
-| **Portfolio** | 2012–2024 | **20 676** | **+4.86%** | **[+2.5, +7.2]** | **+3.05%** |
+| 1X2 | 2012–2024 | 17 890 | +4.8% | [+2.3, +7.4] | +3.2% |
+| O/U 2.5 | 2019–2024 | 1 311 | +5.9% | [+0.4, +11.2] | +3.9% |
+| Asian Handicap | 2019–2024 | 1 475 | +5.0% | [+0.5, +9.5] | +0.4% |
+| **Portfolio** | 2012–2024 | **20 676** | **+4.86%** | **[+2.6, +7.1]** | **+3.05%** |
 
 Implementation: [`src/value_bet_sharp.py`](src/value_bet_sharp.py).
 
@@ -24,11 +24,13 @@ Implementation: [`src/value_bet_sharp.py`](src/value_bet_sharp.py).
 Nothing here was designed. The strategy fell out of the July 2026 audit of the ML
 pipeline — an audit that was looking for an error, not for an edge.
 
-Its job was to explain a −3.2% ROI that turned out to be −6.7%. While re-running
+Its job was to explain the −3.2% ROI this repository advertised, which turned out
+to be −6.7%. While re-running
 the corrected pipeline I printed returns at the panel's *maximum* odds next to
 returns at the average, as a diagnostic: how much of the loss was the model, and
-how much was the price I was assumed to get? The old leaky v5 selection returned
-−3.3% at average odds and **+1.0% at maximum odds**. As a result that number was
+how much was the price I was assumed to get? Reproduced, the old leaky v5
+selection lost 3.3% at average odds and **made +1.0% at maximum odds**. As a
+result that number was
 worthless — its perimeter had been chosen after seeing league-level results,
 precisely the error being corrected. But it said something the model's own
 metrics did not: the disagreement between bookmakers on the same match carried
@@ -65,8 +67,9 @@ this document rests on, and the only thing the forward test can honestly judge.
 ![EV gradient](docs/07_sharp_ev_gradient.png)
 
 The strategy's own placebo test: every Max-odds bet in the dataset, bucketed by
-the edge estimated *before* the match. Bets the method calls bad lose 7.3%; bets
-it calls good win 10.9%; the ordering never breaks. A backtest artefact would not
+the edge estimated *before* the match. The worst bucket (EV −10 to −6%) loses
+7.3%, the best (EV > +8%) makes 10.9%, and the ordering never breaks between
+them. A backtest artefact would not
 produce a monotone gradient through zero. Note also that betting Max odds
 indiscriminately loses 1.2% — the premium of the best available price explains
 none of this.
@@ -88,6 +91,12 @@ better than Pinnacle's own closing line, and roughly two thirds of individual
 bets beat the close — against 50% for a coin flip. This is the standard proof
 that a selection captures genuine mispricing rather than variance, and it is the
 metric to watch in any forward test.
+
+One exception, stated plainly: the Asian Handicap leg carries almost no CLV
+(+0.4%, 51.8% of bets beating the close — a coin flip). Its +5.0% ROI over 1 475
+bets rests on nothing but the ROI itself, which at that sample size is noise. The
+portfolio's CLV is carried by 1X2 and Over/Under; treat the AH line as unproven
+rather than as a third confirmation.
 
 ## Equity curve
 
@@ -122,7 +131,8 @@ suggests the selection still works and the opportunities are simply rarer.
 ## Robustness
 
 - **Leave-one-league-out**: removing any league leaves the rest at +4.4% to +5.4%
-- **Placebo**: bets at EV < −0.02 lose 3.8%, the neutral zone loses 0.5%, the
+- **Placebo** (1X2, coarser cut than the chart above): bets at EV < −0.02 lose
+  3.8%, the neutral zone loses 0.5%, the
   strategy makes +4.8% — a monotone gradient
 - **Random Max selection** on the same matches returns −1.0%: the best-price
   premium alone is not the edge
@@ -157,8 +167,10 @@ The binding constraints are operational, not statistical:
 - historical odds are snapshots, not executable prices
 - capturing the panel maximum assumes accounts almost everywhere
 - an adaptation to French (ANJ) bookmakers was tested and abandoned in August
-  2026: measured French odds sit at 0.929 × Pinnacle, a discount that leaves no
-  profit
+  2026. Across 4 342 prices on 99 matches from the five ANJ books, the best French
+  price sits at a median 0.936 × Pinnacle, and **not one quote ever reached the 2%
+  EV threshold** — the best was +0.25%. A panel priced below the sharp book cannot
+  produce an outlier above its fair value
 
 ## Forward testing
 

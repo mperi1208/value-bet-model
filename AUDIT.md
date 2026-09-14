@@ -63,9 +63,9 @@ Résultats par marché (EV > 0.02, @Max, aucun filtre de ligue, seuil fixé a pr
 
 | Marché | Période | n | ROI | IC95 | CLV |
 |---|---|---|---|---|---|
-| 1X2 | 2012–2024 | 17 890 | +4.8% | [+2.2, +7.4] | +3.2% (69% > 0) |
-| O/U 2.5 | 2019–2024 | 1 311 | +5.9% | — | +4.2% |
-| Asian Handicap | 2019–2024 | 1 475 | +5.0% | — | +1.6% |
+| 1X2 | 2012–2024 | 17 890 | +4.8% | [+2.3, +7.4] | +3.2% (69% > 0) |
+| O/U 2.5 | 2019–2024 | 1 311 | +5.9% | [+0.4, +11.2] | +3.9% |
+| Asian Handicap | 2019–2024 | 1 475 | +5.0% | [+0.5, +9.5] | +0.4% (51.8% > 0 — pas de preuve CLV) |
 | **Portefeuille** | 2012–2024 | **20 676** | **+4.86%** | **[+2.6, +7.1]** | **+3.05%** |
 
 Robustesse du 1X2 (le cœur du signal) : positif 10/13 saisons, 9/10 ligues (seule D2 est négative, −0.3%), sur les trois issues (H +6.1%, D +5.8%, A +2.3%) et sur les deux ères (2012–2018 : +5.8% ; 2019+ : +3.1%). Le test de réalisme le plus dur — parier uniquement chez Bet365 au lieu de la cote Max théorique — donne encore +1.6% de ROI et un CLV de +1.4% (60% > 0) : l'edge survit, atténué, à l'hypothèse d'exécution la plus pessimiste. Le tableau par bucket de cotes confirme que le dévig power élimine l'essentiel du biais outsider ; seule la tranche 8–15 reste négative (−8%, 839 paris, 4.7% du volume) — attendu, c'est là que le dévig est le moins fiable, et je ne l'ai volontairement pas exclue pour ne pas fitter le périmètre sur les résultats.

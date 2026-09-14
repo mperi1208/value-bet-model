@@ -15,9 +15,10 @@ data, but it comes from bookmakers pricing slowly, not from predicting football.
 
 ![EV gradient](docs/07_sharp_ev_gradient.png)
 
-*The strategy's placebo test: bets it calls bad lose 7.3%, bets it calls good win
-10.9%, and the ordering never breaks. Betting the best available price
-indiscriminately loses 1.2%, so the price premium alone explains none of it.*
+*The strategy's placebo test: the worst-EV bucket loses 7.3%, the best makes
+10.9%, and the ordering never breaks between them. Betting the best available
+price indiscriminately loses 1.2%, so the price premium alone explains none of
+it.*
 
 ## Read more
 
