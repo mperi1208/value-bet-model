@@ -19,6 +19,47 @@ Implementation: [`src/value_bet_sharp.py`](src/value_bet_sharp.py).
 
 ---
 
+## How I found it
+
+Nothing here was designed. The strategy fell out of the July 2026 audit of the ML
+pipeline — an audit that was looking for an error, not for an edge.
+
+Its job was to explain a −3.2% ROI that turned out to be −6.7%. While re-running
+the corrected pipeline I printed returns at the panel's *maximum* odds next to
+returns at the average, as a diagnostic: how much of the loss was the model, and
+how much was the price I was assumed to get? The old leaky v5 selection returned
+−3.3% at average odds and **+1.0% at maximum odds**. As a result that number was
+worthless — its perimeter had been chosen after seeing league-level results,
+precisely the error being corrected. But it said something the model's own
+metrics did not: the disagreement between bookmakers on the same match carried
+value that the model had no part in.
+
+So the test was to delete the model. If price dispersion is the signal, then the
+strategy needs no features, no training and no parameter fitted on outcomes —
+take the sharp book's price as truth and bet whoever disagrees with it by enough
+to clear the margin.
+
+The first version covered Over/Under 2.5 only, and was encouraging rather than
+convincing: +4.0% ROI on 2 666 bets at EV > 0.01 with +2.8% CLV, but a 95%
+interval of [−0.0, +8.2] that touched zero, over five seasons.
+
+That was a coverage limit, not a strategy limit. Pinnacle's O/U prices only begin
+in 2019 in the football-data files (~20% of matches), while its 1X2 prices run
+back to ~2012 (54%). Carrying the same method to 1X2 turned five seasons into
+thirteen and 2 666 bets into 17 890 — enough for the interval to leave zero.
+
+The move forced two corrections. Multiplicative devigging overstates the fair
+probability of outsiders, which barely matters on O/U where both sides sit near
+2.0 and matters enormously in 1X2; a *power* devig removed a whole class of false
+positives on long odds. Asian Handicap needed exact settlement, quarter-lines
+included.
+
+The last shift was to stop treating ROI as the verdict. At this effect size
+20 676 bets is still noise; closing line value is not. CLV is what the rest of
+this document rests on, and the only thing the forward test can honestly judge.
+
+---
+
 ## The bets behave exactly as a real edge should
 
 ![EV gradient](docs/07_sharp_ev_gradient.png)

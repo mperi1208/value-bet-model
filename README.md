@@ -23,7 +23,7 @@ indiscriminately loses 1.2%, so the price premium alone explains none of it.*
 
 | | |
 |---|---|
-| [**STRATEGY.md**](STRATEGY.md) | The profitable strategy — evidence, robustness tests, staking, and why it does not survive on an exchange |
+| [**STRATEGY.md**](STRATEGY.md) | The profitable strategy — how the audit uncovered it, the evidence, robustness tests, staking, and why it does not survive on an exchange |
 | [**RESULTS_ML.md**](RESULTS_ML.md) | The ML null result — the AUC ceiling, the calibration paradox, and the false positive that started it |
 | [**AUDIT.md**](AUDIT.md) | The July 2026 audit that corrected this repository's own headline numbers |
 
