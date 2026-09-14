@@ -20,6 +20,39 @@ data, but it comes from bookmakers pricing slowly, not from predicting football.
 price indiscriminately loses 1.2%, so the price premium alone explains none of
 it.*
 
+## Evidence
+
+| Market | Period | n | ROI | 95% CI | CLV |
+|---|---|---|---|---|---|
+| 1X2 | 2012–2024 | 17 890 | +4.8% | [+2.3, +7.4] | +3.2% |
+| O/U 2.5 | 2019–2024 | 1 311 | +5.9% | [+0.4, +11.2] | +3.9% |
+| Asian Handicap | 2019–2024 | 1 475 | +5.0% | [+0.5, +9.5] | +0.4% |
+| **Portfolio** | 2012–2024 | **20 676** | **+4.86%** | **[+2.6, +7.1]** | **+3.05%** |
+
+Closing line value is the load-bearing number here, not ROI. The selected bets
+were priced better than Pinnacle's own closing line in all thirteen seasons, and
+68% of them beat it — against 50% for a coin flip. The Asian Handicap leg is the
+exception, and is reported as unproven rather than as a third confirmation.
+
+Two tests carry the rest: leave any league out and the remaining nine still
+return +4.4% to +5.4%; and betting only at Bet365 instead of the theoretical
+panel maximum — the most pessimistic execution assumption available — still
+returns +1.6% with +1.4% CLV.
+
+## These numbers have been corrected twice
+
+Both times downward, and both times against results this repository had already
+published.
+
+- **July 2026** — the advertised ML ROI of −3.2% was inflated by a global
+  isotonic recalibration fitted on the full out-of-sample set, and by excluding
+  leagues after seeing their results. The honest figure is **−6.7%**. The same
+  class of error had produced a false +3.8% in v1.
+- **September 2026** — the Asian Handicap CLV published as +1.6% is in fact
+  **+0.4%**, a coin flip; the portfolio total of +3.05% was arithmetically
+  incompatible with the figure it was printed next to. That leg now carries no
+  evidential weight.
+
 ## Read more
 
 | | |
